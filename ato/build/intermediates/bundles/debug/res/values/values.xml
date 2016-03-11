@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/spinner_algs.xml -->
+    <eat-comment/>
+    <string-array name="spinner_algs_array">
+	        <item>SWMR_2ATOMICITY</item>
+	        <item>SWMR_ATOMICITY</item>
+	        <item>MWMR_ATOMICITY</item>
+	    </string-array>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/dimens.xml -->
+    <eat-comment/>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/refs.xml -->
+    <eat-comment/>
+    <item name="fragment_memo" type="layout">@layout/fragment_memo_list</item>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings_activity_login.xml -->
+    <eat-comment/>
+    <string name="action_exit_system"><b>Exit System</b></string>
+    <string name="action_forgot_password">Recover lost password</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="action_settings">Settings</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings_activity_login.xml -->
+    <eat-comment/>
+    <string name="action_sign_in_register"><b>Sign in</b></string>
+    <string name="action_sign_in_short">Sign in</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="app_name">MEMO</string>
+    <string name="btn_exec_sync">Sync Time</string>
+    <string name="btn_start_polling">Start Polling</string>
+    <string name="btn_time_polling">Polling Time</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings_activity_login.xml -->
+    <eat-comment/>
+    <string name="error_field_required">This field is required.</string>
+    <string name="error_unavailable_ip">This ip address is unavailable.</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="get_kv">Search</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="imgbtn_add">Add</string>
+    <string name="imgbtn_delete">Delete</string>
+    <string name="imgbtn_search">Search</string>
+    <string name="join_group_dialog_title">Add new server replica</string>
+    <string name="kv_get_dialog_title">Get Key-value Dialog</string>
+    <string name="kv_put_dialog_title">Put Key-value Dialog</string>
+    <string name="kv_remove_dialog_title">Remove Key-value Dialog</string>
+    <string name="login_info_relogin">ReLogin</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings_activity_login.xml -->
+    <eat-comment/>
+    <string name="login_progress_signing_in">Signing in…</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="prompt_key_range">key range: [0, INPUT)</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings_activity_login.xml -->
+    <eat-comment/>
+    <string name="prompt_node_id">identifier: an integer</string>
+    <string name="prompt_node_ip">ip address</string>
+    <string name="prompt_node_name">name</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="prompt_rate">number per second</string>
+    <string name="prompt_replica_ip">ip address</string>
+    <string name="prompt_request_number">number of requests</string>
+    <string name="prompt_value_range">value range: [0, INPUT)</string>
+    <string name="put_kv">Add</string>
+    <string name="radio_reader">Reader</string>
+    <string name="radio_writer">Writer</string>
+    <string name="remove_kv">Delete</string>
+    <string name="run">Run Benchmark</string>
+    <string name="tag_get_dialog">tag_get_dialog</string>
+    <string name="tag_join_group_dialog">tag_join_group_dialog</string>
+    <string name="tag_put_dialog">tag_put_dialog</string>
+    <string name="tag_remove_dialog">tag_remove_dialog</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings_activity_login.xml -->
+    <eat-comment/>
+    <string name="title_activity_login">Login</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="title_reminder_detail">Reminder Detail</string>
+    <string name="title_reminder_list">Reminders</string>
+    <string name="title_section_benchmark">Benchmark</string>
+    <string name="title_section_group">Group</string>
+    <string name="title_section_memo">Memo</string>
+    <string name="title_section_timing">Timing</string>
+    <string name="txt_exec_not_ready">No execution ready.</string>
+    <string name="txt_exec_ready">Execution has been stored in the file: /sdcard/execution.txt</string>
+    <string name="txt_kv_key">Key:</string>
+    <string name="txt_kv_representation">Key ; Value ; Version</string>
+    <string name="txt_kv_value">Value:</string>
+    <string name="txt_memo_operations">Operations:</string>
+    <string name="txt_replica_ip">IP:</string>
+    <string name="txt_replica_name">Name:</string>
+    <string name="txt_replica_representation">IP ; Name</string>
+    <string name="txt_timing_log">Timing Service Log To Show.</string>
+    <string name="txt_timing_log_polling">Permission granted. Now you can poll time from PC.</string>
+    <string name="txt_timing_log_start">Connection to PC has been established. Wait for Authorization.</string>
+    <!-- From: file:/C:/Users/Mio/AndroidStudioProjects/BallGame/ato/src/main/res/values/styles.xml -->
+    <eat-comment/>
+    <style name="AppBaseTheme" parent="Theme.AppCompat.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+
+        -->
+    </style>
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+    <style name="LoginFormContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">16dp</item>
+    </style>
+</resources>

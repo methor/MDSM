@@ -1,0 +1,183 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* README.md
+* doxygen\
+* doxygen\MobileMemo.doxyfile
+* experiment\
+* experiment\For latency\
+* experiment\For latency\SWMR-2atomicity\
+* experiment\For latency\SWMR-2atomicity\rate100\
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\cp.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate100\0812-1829\info.txt
+* experiment\For latency\SWMR-2atomicity\rate10\
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate10\0811-2109\info.txt
+* experiment\For latency\SWMR-2atomicity\rate200\
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\cp.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate200\0812-2220\info.txt
+* experiment\For latency\SWMR-2atomicity\rate20\
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate20\0812-1032\info.txt
+* experiment\For latency\SWMR-2atomicity\rate50\
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\cp.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0812-1614\info.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\cp.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate50\0813-1651-3\info.txt
+* experiment\For latency\SWMR-2atomicity\rate5\
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus3\
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus3\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\Nexus3\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0811-1852\info.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\Nexus0\
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\Nexus0\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\Nexus0\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\Nexus33\
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\Nexus33\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\Nexus33\execution_delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\cp.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\delay.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\execution.txt
+* experiment\For latency\SWMR-2atomicity\rate5\0813-2141-2\info.txt
+* ic_launcher-web.png
+* logback.xml
+* proguard-project.txt
+
+Replaced Libraries with Dependencies:
+-------------------------------------
+The importer recognized the following library projects as third party
+libraries and replaced them with Gradle dependencies instead. This has
+the advantage that more explicit version information is known, and the
+libraries can be updated automatically. However, it is possible that
+the source files in your project were of an older version than the
+dependency we picked, which could render the project not compileable.
+You can disable the library replacement in the import wizard and try
+again:
+
+appcompat-v7 => [com.android.support:appcompat-v7:19.+]
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => mobileMemo\src\main\AndroidManifest.xml
+* res\ => mobileMemo\src\main\res\
+* src\ => mobileMemo\src\main\java\
+* test\ => mobileMemo\src\main\java\
+* test\executions\execution.txt => mobileMemo\src\main\resources\executions\execution.txt
+
+Missing Android Support Repository:
+-----------------------------------
+Some useful libraries, such as the Android Support Library, are
+installed from a special Maven repository, which should be installed
+via the SDK manager.
+
+It looks like this library is missing from your SDK installation at:
+null
+
+To install it, open the SDK manager, and in the Extras category,
+select "Android Support Repository". You may also want to install the
+"Google Repository" if you want to use libraries like Google Play
+Services.
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

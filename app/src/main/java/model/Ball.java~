@@ -1,0 +1,175 @@
+package model;
+
+import constant.Constant;
+
+/**
+ * Created by CS on 2015/9/18.
+ */
+public class Ball {
+    private float radius;                          //radius of the ball object
+
+    public enum ballID {MYBALL, RIVALBALL, GOALBALL}
+
+    private ballID whichBall;                       //whom the ball belongs to
+    private float accelarationX;                   //accelaration in X axis
+    private float AccelarationY;                //accelaration in Y axis
+    private float speedX;                          //speed in X axis
+    private float SpeedY;                       //speed in Y axis
+    private float X;                     //coordinate of X axis
+    private float Y;                     //coordinate of Y axis
+    /**
+     * if collide with other balls, edges of the field
+     * NOTE cases with different balls as follows:
+     * case 1: whichBall==MYBALL, cF[0] represents RIVALBALL, cF[1] represents GOALBALL;
+     * case 2: whichBall==RIVALBALL, cF[0] represents MYBALL, cF[1] represents GOALBALL;
+     * case 3: whichBall==GOALBALL, cF[0] represents MYBALL, cF[1] represents RIVALBALL.
+     * cF[2] with top of field, cF[3] with bottom of field, cF[4] with left, cF[5] with right.
+     */
+    private boolean[] collisionFlags;
+
+    public float getRadius() {
+        return radius;
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
+
+    public ballID getWhichBall() {
+        return whichBall;
+    }
+
+    public void setWhichBall(ballID whichBall) {
+        this.whichBall = whichBall;
+    }
+
+    public float getAccelarationX() {
+        return accelarationX;
+    }
+
+    public void setAccelarationX(float accelarationX) {
+        this.accelarationX = accelarationX;
+    }
+
+    public float getAccelarationY() {
+        return AccelarationY;
+    }
+
+    public void setAccelarationY(float accelarationY) {
+        AccelarationY = accelarationY;
+    }
+
+    public float getSpeedX() {
+        return speedX;
+    }
+
+    public void setSpeedX(float speedX) {
+        this.speedX = speedX;
+    }
+
+    public float getSpeedY() {
+        return SpeedY;
+    }
+
+    public void setSpeedY(float speedY) {
+        SpeedY = speedY;
+    }
+
+    public float getX() {
+        return X;
+    }
+
+    public void setX(float x) {
+        this.X = x;
+    }
+
+    public float getY() {
+        return Y;
+    }
+
+
+    public void setY(float y) {
+        this.Y = y;
+    }
+
+    public boolean[] getCollisionFlags() {
+        return collisionFlags;
+    }
+
+    public void setCollisionFlags(int index, boolean flag) {
+        collisionFlags[index] = flag;
+    }
+    public Ball(ballID id) {
+        radius = Constant.BALL_RADIOUS;
+        accelarationX = 0;
+        AccelarationY = 0;
+        speedX = 0;
+        SpeedY = 0;
+        X = Constant.FIELD_X + Constant.FIELD_WIDTH / 2 - Constant.BALL_RADIOUS;
+        collisionFlags = new boolean[6];
+
+        switch (id) {
+            case MYBALL:
+                whichBall = ballID.MYBALL;
+                Y = Constant.FIELD_Y + Constant.FIELD_HEIGHT * 3 / 4 - Constant.BALL_RADIOUS;
+                break;
+            case RIVALBALL:
+                whichBall = ballID.RIVALBALL;
+                Y = Constant.FIELD_Y + Constant.FIELD_HEIGHT / 4 - Constant.BALL_RADIOUS;
+                break;
+            case GOALBALL:
+                whichBall = ballID.GOALBALL;
+                Y = Constant.FIELD_Y + Constant.FIELD_HEIGHT / 2 - Constant.BALL_RADIOUS;
+                break;
+        }
+    }
+    public float directGetAccelarationX() {
+        return accelarationX;
+    }
+
+    public void directSetAccelarationX(float accelarationX) {
+        this.accelarationX = accelarationX;
+    }
+
+    public float directGetAccelarationY() {
+        return AccelarationY;
+    }
+
+    public void directSetAccelarationY(float accelarationY) {
+        AccelarationY = accelarationY;
+    }
+
+    public float directGetSpeedX() {
+        return speedX;
+    }
+
+    public void directSetSpeedX(float speedX) {
+        this.speedX = speedX;
+    }
+
+    public float directGetSpeedY() {
+        return SpeedY;
+    }
+
+    public void directSetSpeedY(float speedY) {
+        SpeedY = speedY;
+    }
+
+    public float directGetX() {
+        return X;
+    }
+
+    public void directSetX(float x) {
+        this.X = x;
+    }
+
+    public float directGetY() {
+        return Y;
+    }
+
+
+    public void setY(float y) {
+        this.Y = y;
+    }
+
+}
