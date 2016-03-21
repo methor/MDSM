@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import calc.MotionCalculate;
+import com.njucs.main.MainActivity;
 import consistencyinfrastructure.data.kvs.Key;
 import dsm.AbstractDsm;
 import dsm.MWMRAtomicDsm;
@@ -17,7 +18,10 @@ import consistencyinfrastructure.login.SessionManagerWrapper;
 import dsm.WeakDsm;
 import ics.mobilememo.sharedmemory.data.kvs.VersionValue;
 import log.LogParamsToFile;
+import log.TimePolling;
+import nju.cs.timingservice.TimingService;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +35,7 @@ import java.util.regex.Pattern;
  */
 public class GameModel extends Thread {
 
-    public static final int GOALBALLID = 0;
+
 
     public static final String ORIENTATION_NORTH = "north";
 
@@ -50,31 +54,20 @@ public class GameModel extends Thread {
 
     private int compileCount = 0;
 
-    public GameModel(String orientation1, int id1, String orientation2, int id2, AbstractDsm dsm,
+    public GameModel(int id1, int id2, AbstractDsm dsm,
                      Activity activity)
     {
-        if (orientation1.equals("north"))
-        {
-            if (!orientation2.equals("south"))
-                System.exit(-1);
-        }
-        if (orientation2.equals("north"))
-            if (!orientation1.equals("south"))
-                System.exit(-1);
 
-        ballList.add(new Ball(orientation1, id1));
-        ballList.add(new Ball(orientation2, id2));
-        ballList.add(new Ball(ORIENTATION_NONE, GOALBALLID));
+        ballList.add(new Ball(ORIENTATION_NORTH, id1));
+        ballList.add(new Ball(ORIENTATION_SOUTH, id2));
+        ballList.add(new Ball(ORIENTATION_NONE, SnapShot.GOALBALLID));
 
         this.dsm = dsm;
         this.activity = activity;
         Date date = new Date();
-        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' hh:mm:ss");
-        String tag = null;
-        if (dsm instanceof MWMRAtomicDsm)
-            tag = MWMRAtomicDsm.TAG;
-        else if (dsm instanceof SWMRAtomicDsm)
-            tag = SWMRAtomicDsm.TAG;
+        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' hh_mm_ss");
+        String tag = dsm.getClass().getName();
+
         log = new LogParamsToFile(activity.getApplication(), tag + "_" +
                 ft.format(date) + ".dat");
     }
@@ -88,7 +81,7 @@ public class GameModel extends Thread {
 
     public Key MY_KEY = new Key(String.valueOf(SessionManagerWrapper.NODEID));
     public Key OTHER_KEY = new Key(String.valueOf(SessionManagerWrapper.OTHERID.get(0)));
-    public Key GOAL_KEY = new Key(String.valueOf(GOALBALLID));
+    public Key GOAL_KEY = new Key(String.valueOf(SnapShot.GOALBALLID));
 
     public void handleData(float v, float v1)
     {
@@ -105,16 +98,17 @@ public class GameModel extends Thread {
             myBall.setAccelarationY(v1);
             dsm.put(MY_KEY, myBall.toString());
             VersionValue s = ((MWMRAtomicDsm) dsm).get(OTHER_KEY);
-            if (s.equals(((MWMRAtomicDsm) dsm).getReservedValue()))
+            if (s.compareTo(((MWMRAtomicDsm) dsm).getReservedValue()) == 0)
             {
                 //
             } else
             {
+
                 Ball rival = Ball.fromString(s.getValue());
                 snapShot.setBall(rival);
             }
             s = ((MWMRAtomicDsm) dsm).get(GOAL_KEY);
-            if (s.equals(((MWMRAtomicDsm) dsm).getReservedValue()))
+            if (s.compareTo(((MWMRAtomicDsm) dsm).getReservedValue()) == 0)
             {
                 //
             } else
@@ -125,7 +119,7 @@ public class GameModel extends Thread {
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
             MotionCalculate.INSTANCE.updateAll(0.1f);
 
-            dsm.put(GOAL_KEY, snapShot.findBall(GOALBALLID).toString());
+            dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID).toString());
 
             synchronized (this)
             {
@@ -161,7 +155,7 @@ public class GameModel extends Thread {
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
             MotionCalculate.INSTANCE.updateAll(0.1f);
 
-            dsm.put(GOAL_KEY, snapShot.findBall(GOALBALLID));
+            dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID));
 
             synchronized (this)
             {
@@ -169,24 +163,28 @@ public class GameModel extends Thread {
             }
 
         }
-        /*if (compileCount == 0)
+        if (MainActivity.DEBUG)
+        {
+            if (compileCount == 0)
+                try
+                {
+                    TimingService.INSTANCE.receiveAuthMsg();
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
             try
             {
-                TimingService.ATO.receiveAuthMsg();
-            } catch (IOException e)
+                long time = TimePolling.INSTANCE.pollingTime();
+                snapShot.time = time;
+                log.write(snapShot.toString());
+            } catch (Throwable throwable)
             {
-                e.printStackTrace();
+                throwable.printStackTrace();
             }
-
-        try
-        {
-            long time = TimePolling.ATO.pollingTime();
-            log.write(time + "\t" + snapShot.toString());
-        } catch (Throwable throwable)
-        {
-            throwable.printStackTrace();
+            compileCount++;
         }
-        compileCount++;*/
 
 
     }

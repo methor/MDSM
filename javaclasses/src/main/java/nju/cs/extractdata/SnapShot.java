@@ -1,6 +1,4 @@
-package model;
-
-import util.Util;
+package nju.cs.extractdata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,22 +9,11 @@ import java.util.regex.Pattern;
  * Created by Mio on 2015/11/23.
  */
 public class SnapShot {
-
     public static final int GOALBALLID = 0;
 
     public List<Ball> ballList = new ArrayList<>();
     public long time = System.currentTimeMillis();
 
-    public SnapShot(GameModel gameModel)
-    {
-        synchronized (gameModel)
-        {
-            for (Ball ball : gameModel.getBallList())
-            {
-                ballList.add(new Ball(ball));
-            }
-        }
-    }
 
     private SnapShot()
     {

@@ -70,7 +70,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         if (ball.getBallID() == SessionManagerWrapper.NODEID)
                 paint.setColor(Color.GREEN);
-        else if (ball.getBallID() == GameModel.GOALBALLID)
+        else if (ball.getBallID() == SnapShot.GOALBALLID)
         {
             paint.setColor(Color.BLACK);
             paint.setStyle(Paint.Style.STROKE);
@@ -111,8 +111,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         canvas.drawColor(Color.WHITE);
         Paint paint = new Paint();
 
-        List<Ball> ballList;
-        ballList = new SnapShot(model).ballList;
+        java.util.List<Ball> ballList = new SnapShot(model).ballList;
 
 
         drawField(Field.INSTANCE, canvas, paint);

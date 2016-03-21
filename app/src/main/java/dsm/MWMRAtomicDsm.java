@@ -5,7 +5,7 @@ import consistencyinfrastructure.communication.MessagingService;
 import consistencyinfrastructure.data.kvs.Key;
 import consistencyinfrastructure.login.SessionManager;
 import ics.mobilememo.sharedmemory.atomicity.AtomicityRegisterClientFactory;
-import ics.mobilememo.sharedmemory.atomicity.message.AtomicityMessagingService;
+import ics.mobilememo.sharedmemory.atomicity.message.*;
 import ics.mobilememo.sharedmemory.data.kvs.VersionValue;
 import ics.mobilememo.sharedmemory.data.kvs.kvstore.KVStoreInMemory;
 
@@ -24,7 +24,12 @@ public class MWMRAtomicDsm extends AbstractDsm<String, Key, VersionValue> {
         {
             AtomicityRegisterClientFactory.INSTANCE.setAtomicityRegisterClient(
                     AtomicityRegisterClientFactory.MWMR_ATOMICITY);
-            MessagingService.ATO.registerReceiver("AtomicityMessage", AtomicityMessagingService.INSTANCE);
+            MessagingService.ATO
+                    .registerReceiver(AtomicityReadPhaseMessage.class.getSimpleName(), AtomicityMessagingService.INSTANCE)
+                    .registerReceiver(AtomicityReadPhaseAckMessage.class.getSimpleName(), AtomicityMessagingService.INSTANCE)
+                    .registerReceiver(AtomicityWritePhaseAckMessage.class.getSimpleName(), AtomicityMessagingService.INSTANCE)
+                    .registerReceiver(AtomicityWritePhaseMessage.class.getSimpleName(), AtomicityMessagingService.INSTANCE);
+
             serverTask = MessagingService.ATO.new ServerTask(SessionManager.getNewInstance().getNodeIp());
             serverTask.start();
 

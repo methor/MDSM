@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import com.njucs.main.MainActivity;
 import com.njucs.main.R;
 import constant.Constant;
 import consistencyinfrastructure.group.GroupConfig;
@@ -145,7 +146,8 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
 
 
         // start PollingTime functionality
-        TimePolling.INSTANCE.establishDeviceHostConnection();
+        if (MainActivity.DEBUG)
+            TimePolling.INSTANCE.establishDeviceHostConnection();
 
         if (info.isGroupOwner == true)
         {

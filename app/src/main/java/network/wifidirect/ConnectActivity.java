@@ -340,8 +340,8 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                     }
                 }
 
-                bundle.putString("orientation1", GameModel.ORIENTATION_NORTH);
-                bundle.putString("orientation2", GameModel.ORIENTATION_SOUTH);
+                //bundle.putString("orientation1", GameModel.ORIENTATION_NORTH);
+                //bundle.putString("orientation2", GameModel.ORIENTATION_SOUTH);
                 bundle.putInt("id1", 100);
                 bundle.putInt("id2", 101);
                 intent.putExtras(bundle);

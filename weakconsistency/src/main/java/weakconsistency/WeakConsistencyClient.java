@@ -24,7 +24,7 @@ public enum WeakConsistencyClient implements IRegisterClient<Serializable, Key, 
         WeakConsistencyMessage weakConsistencyMessage = new WeakConsistencyMessage(ip, cnt, key, val);
         for (SystemNode systemNode : GroupConfig.INSTANCE.getGroupMembers())
         {
-            MessagingService.ATO.sendOneWay(systemNode.getNodeIp(), weakConsistencyMessage);
+            MessagingService.WEAK.sendOneWay(systemNode.getNodeIp(), weakConsistencyMessage);
         }
 
         return weakConsistencyMessage;

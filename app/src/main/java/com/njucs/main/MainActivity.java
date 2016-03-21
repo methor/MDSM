@@ -14,7 +14,9 @@ import android.view.WindowManager;
 import consistencyinfrastructure.login.SessionManagerWrapper;
 import constant.Constant;
 import dsm.AbstractDsm;
+import dsm.MWMRAtomicDsm;
 import dsm.WeakDsm;
+import ics.mobilememo.sharedmemory.atomicity.MWMRAtomicityRegisterClient;
 import model.Field;
 import model.GameModel;
 import sensor.AccelarateSensor;
@@ -33,7 +35,7 @@ public class MainActivity extends Activity {
 
     public static final String TAG = MainActivity.class.getName();
 
-    private static final boolean DEBUG = true;
+    public static final boolean DEBUG = true;
 
 
     @Override
@@ -93,21 +95,21 @@ public class MainActivity extends Activity {
         //Constant.constantInit(800, 600, 0, 0);
 
         Field.INSTANCE.initiate();
-        dsm = WeakDsm.INSTANCE();
+        dsm = MWMRAtomicDsm.INSTANCE();
 
 
         Bundle extras = getIntent().getExtras();
-        String orientation1 = extras.getString("orientation1");
-        String orientation2 = extras.getString("orientation2");
+        //String orientation1 = extras.getString("orientation1");
+        //String orientation2 = extras.getString("orientation2");
         int id1 = extras.getInt("id1");
         int id2 = extras.getInt("id2");
         if (SessionManagerWrapper.NODEID == id1)
-            orientation = orientation1;
+            orientation = GameModel.ORIENTATION_NORTH;
         else
-            orientation = orientation2;
+            orientation = GameModel.ORIENTATION_SOUTH;
 
 
-        model = new GameModel(orientation1, id1, orientation2, id2, dsm, this);
+        model = new GameModel(id1, id2, dsm, this);
         model.setName("ModelMessageLooper");
         model.start();
         gameView = new GameView(this, model);

@@ -203,6 +203,7 @@ public enum MessagingService implements IReceiver {
         else // TODO: other messages
             return;*/
         String s = msg.getClass().getSimpleName();
+        System.out.println("Message type:" + s);
         receiverMap.get(s).onReceive(msg);
 
     }
@@ -217,10 +218,11 @@ public enum MessagingService implements IReceiver {
             return NetworkConfig.NETWORK_PORT + 100;
     }
 
-    public void registerReceiver(String s, IReceiver receiver)
+    public MessagingService registerReceiver(String s, IReceiver receiver)
     {
         System.out.println(s + " " + receiver.getClass());
         receiverMap.putIfAbsent(s, receiver);
+        return this;
     }
 
 

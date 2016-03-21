@@ -28,6 +28,5 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="consistencyinfrastructure" exported="" />
-    <orderEntry type="library" exported="" name="weakconsistency.weakconsistency" level="project" />
   </component>
 </module>
