@@ -81,6 +81,8 @@ public enum MotionCalculate {
 
             }
         }
+        
+
 
     }
 
@@ -117,6 +119,8 @@ public enum MotionCalculate {
                 ball.collisionFlagsWithField.add(true);
             else
                 ball.collisionFlagsWithField.add(false);
+
+
 
             // collide with field left
             if (newXLeftTop <= 0 && (newYLeftTop >= 0 || newYLeftTop > newXLeftTop) &&
@@ -187,6 +191,7 @@ public enum MotionCalculate {
 
             ballA.setSpeedX(speedA.x);
             ballA.setSpeedY(speedA.y);
+
         }
 
 

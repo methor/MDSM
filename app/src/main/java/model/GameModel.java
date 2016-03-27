@@ -65,7 +65,7 @@ public class GameModel extends Thread {
         this.dsm = dsm;
         this.activity = activity;
         Date date = new Date();
-        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' hh_mm_ss");
+        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' hh:mm:ss");
         String tag = dsm.getClass().getName();
 
         log = new LogParamsToFile(activity.getApplication(), tag + "_" +
@@ -83,7 +83,7 @@ public class GameModel extends Thread {
     public Key OTHER_KEY = new Key(String.valueOf(SessionManagerWrapper.OTHERID.get(0)));
     public Key GOAL_KEY = new Key(String.valueOf(SnapShot.GOALBALLID));
 
-    public void handleData(float v, float v1)
+    public void handleData(float v, float v1, long userActTime)
     {
         SnapShot snapShot = null;
         if (dsm instanceof MWMRAtomicDsm)
@@ -177,6 +177,7 @@ public class GameModel extends Thread {
             try
             {
                 long time = TimePolling.INSTANCE.pollingTime();
+                Log.d(TAG, String.valueOf(time));
                 snapShot.time = time;
                 log.write(snapShot.toString());
             } catch (Throwable throwable)
@@ -201,8 +202,9 @@ public class GameModel extends Thread {
                 Bundle bundle = msg.getData();
                 float vx = bundle.getFloat("accelarationX");
                 float vy = bundle.getFloat("accelarationY");
+                long userActTime = bundle.getLong("userActTime");
 
-                handleData(vx, vy);
+                handleData(vx, vy, userActTime);
             }
         };
 
@@ -213,6 +215,7 @@ public class GameModel extends Thread {
     public void onDestroy()
     {
         log.close();
+        TimePolling.INSTANCE.closeDeviceHostConnection();
         MediaScannerConnection.scanFile(activity.getApplication(), new String[]{log.getFile().toString()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri)

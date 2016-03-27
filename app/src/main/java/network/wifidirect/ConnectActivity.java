@@ -1,5 +1,6 @@
 package network.wifidirect;
 
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
@@ -19,14 +20,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
 import com.njucs.main.MainActivity;
 import com.njucs.main.R;
-import constant.Constant;
-import consistencyinfrastructure.group.GroupConfig;
-import consistencyinfrastructure.group.member.SystemNode;
-import consistencyinfrastructure.login.SessionManagerWrapper;
-import ics.mobilememo.sharedmemory.atomicity.AtomicityRegisterClientFactory;
-import model.GameModel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,6 +31,12 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
+
+import consistencyinfrastructure.group.GroupConfig;
+import consistencyinfrastructure.group.member.SystemNode;
+import consistencyinfrastructure.login.SessionManagerWrapper;
+import constant.Constant;
+import ics.mobilememo.sharedmemory.atomicity.AtomicityRegisterClientFactory;
 
 
 /**
@@ -52,31 +54,27 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
 
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
         unregisterReceiver(receiver);
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         receiver = new WifiBroadcastReceiver(mWifiManager, mChannel, this);
         registerReceiver(receiver, intentFilter);
     }
 
     @Override
-    protected void onStop()
-    {
+    protected void onStop() {
         super.onStop();
 
 
     }
 
     @Override
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
 
 
@@ -84,8 +82,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_connect);
@@ -116,8 +113,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_items, menu);
         return true;
@@ -128,28 +124,23 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
      * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case R.id.atn_direct_enable:
-                if (mWifiManager != null && mChannel != null)
-                {
+                if (mWifiManager != null && mChannel != null) {
 
                     // Since this is the system wireless settings activity, it's
                     // not going to send us a result. We will be notified by
                     // WiFiDeviceBroadcastReceiver instead.
 
                     startActivity(new Intent(Settings.ACTION_SETTINGS));
-                } else
-                {
+                } else {
                     Log.e(TAG, "channel or manager is null");
                 }
                 return true;
 
             case R.id.atn_direct_discover:
-                if (!isWifiP2pEnabled)
-                {
+                if (!isWifiP2pEnabled) {
                     Toast.makeText(ConnectActivity.this, R.string.p2p_off_warning,
                             Toast.LENGTH_SHORT).show();
                     return true;
@@ -160,15 +151,13 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                 mWifiManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 
                     @Override
-                    public void onSuccess()
-                    {
+                    public void onSuccess() {
                         Toast.makeText(ConnectActivity.this, "Discovery Initiated",
                                 Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onFailure(int reasonCode)
-                    {
+                    public void onFailure(int reasonCode) {
                         Toast.makeText(ConnectActivity.this, "Discovery Failed : " + reasonCode,
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -180,19 +169,16 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
     }
 
     @Override
-    public void connect(WifiP2pConfig config)
-    {
+    public void connect(WifiP2pConfig config) {
         mWifiManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
 
             @Override
-            public void onSuccess()
-            {
+            public void onSuccess() {
                 // WifiBroadcastReceiver will notify us. Ignore for now.
             }
 
             @Override
-            public void onFailure(int reason)
-            {
+            public void onFailure(int reason) {
                 Toast.makeText(ConnectActivity.this, "Connect failed. Retry.",
                         Toast.LENGTH_SHORT).show();
             }
@@ -201,31 +187,27 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
     }
 
     @Override
-    public void showDetail(WifiP2pDevice device)
-    {
+    public void showDetail(WifiP2pDevice device) {
         PeerInfoFragment peerInfoFragment = ((PeerInfoFragment) getFragmentManager().findFragmentById(R.id.frag_detail));
         peerInfoFragment.showDetail(device);
 
     }
 
     @Override
-    public void disconnect()
-    {
+    public void disconnect() {
         final PeerInfoFragment fragment = (PeerInfoFragment) getFragmentManager()
                 .findFragmentById(R.id.frag_detail);
         fragment.resetViews();
         mWifiManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
 
             @Override
-            public void onFailure(int reasonCode)
-            {
+            public void onFailure(int reasonCode) {
                 Log.d(TAG, "Disconnect failed. Reason :" + reasonCode);
 
             }
 
             @Override
-            public void onSuccess()
-            {
+            public void onSuccess() {
                 fragment.getView().setVisibility(View.GONE);
             }
 
@@ -236,85 +218,71 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
      * Remove all peers and clear all fields. This is called on
      * BroadcastReceiver receiving a state change event.
      */
-    public void resetData()
-    {
+    public void resetData() {
         PeerListFragment fragmentList = (PeerListFragment) getFragmentManager()
                 .findFragmentById(R.id.frag_list);
         PeerInfoFragment fragmentDetails = (PeerInfoFragment) getFragmentManager()
                 .findFragmentById(R.id.frag_detail);
-        if (fragmentList != null)
-        {
+        if (fragmentList != null) {
             fragmentList.clearPeers();
         }
-        if (fragmentDetails != null)
-        {
+        if (fragmentDetails != null) {
             fragmentDetails.resetViews();
         }
     }
 
 
-    public void startMainActivity(final WifiP2pInfo info, final Thread serverThread)
-    {
+    public void startMainActivity(final WifiP2pInfo info, final Thread serverThread) {
 
         final ProgressDialog progressDialog = ProgressDialog.show(this, "Press back to cancel", "Waiting for peers", true,
                 true, new DialogInterface.OnCancelListener() {
 
                     @Override
-                    public void onCancel(DialogInterface dialog)
-                    {
+                    public void onCancel(DialogInterface dialog) {
 
                     }
                 });
         progressDialog.show();
 
 
-
-
-
-
         Runnable runnable = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
 
 
                 String ownerAddress = info.groupOwnerAddress.getHostAddress();
                 Intent intent = new Intent(ConnectActivity.this, MainActivity.class);
                 Bundle bundle = new Bundle();
+                String consistency = null;
 
-                if (info.isGroupOwner == true)
-                {
-                    while (serverThread.isAlive())
-                    {
-                        try
-                        {
+                if (info.isGroupOwner == true) {
+                    while (serverThread.isAlive()) {
+                        try {
                             Thread.sleep(20);
                             serverThread.interrupt();
-                        } catch (InterruptedException e)
-                        {
+                        } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                } else
-                {
+                    consistency = ((PeerInfoFragment) getFragmentManager().
+                            findFragmentById(R.id.frag_detail)).consistency;
+                } else {
 
-                    try
-                    {
+                    try {
                         Socket socket = new Socket();
                         socket.connect(new InetSocketAddress(info.groupOwnerAddress, Constant.SERVERPORT));
                         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                                 socket.getInputStream()));
                         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-                        try
-                        {
+                        try {
                             printWriter.println("Request");
                             Log.d(TAG, "" + bufferedReader.readLine());
                             printWriter.println("Ack");
+                            consistency = bufferedReader.readLine();
 
                             String myIp = socket.getLocalAddress().getHostAddress();
 
-                            if (!new SessionManagerWrapper().isSessionAlive(myIp, ownerAddress, 101, 100))
-                            {
+                            if (!new SessionManagerWrapper().isSessionAlive(myIp, ownerAddress, 101, 100)) {
                                 GroupConfig.INSTANCE.clearReplicas();
 
                                 GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress));
@@ -328,14 +296,11 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                                         .setOtherID(Arrays.asList(100))
                                         .setOtherIp(ownerAddress);
                             }
-                        }
-                        finally
-                        {
+                        } finally {
                             socket.close();
                         }
 
-                    } catch (IOException e)
-                    {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
@@ -344,6 +309,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                 //bundle.putString("orientation2", GameModel.ORIENTATION_SOUTH);
                 bundle.putInt("id1", 100);
                 bundle.putInt("id2", 101);
+                bundle.putString(getResources().getString(R.string.consistency), consistency);
                 intent.putExtras(bundle);
 
                 if (progressDialog != null && progressDialog.isShowing())
@@ -356,8 +322,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
         new Thread(runnable).start();
     }
 
-    public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled)
-    {
+    public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
         this.isWifiP2pEnabled = isWifiP2pEnabled;
     }
 }

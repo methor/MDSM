@@ -1,9 +1,12 @@
 package nju.cs.extractdata;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Mio on 2016/3/21.
@@ -13,55 +16,51 @@ public class ExtractGameState {
     public static void main(String[] args)
     {
 
-        System.out.println(ExtractGameState.class.getSimpleName());
         if (args.length < 2)
             throw new IllegalArgumentException();
-        try (
-                BufferedReader bufferedReader1 = new BufferedReader(new FileReader(args[0]));
-                BufferedReader bufferedReader2 = new BufferedReader(new FileReader(args[1]));
-                PrintWriter printWriter1 = new PrintWriter("deviceNo1.dat", "utf-8");
-                PrintWriter printWriter2 = new PrintWriter("deviceNo2.dat", "utf-8");
-
-        )
+        List<File> logDirs = new ArrayList<File>();
+        for (String arg : args)
         {
-            String s1 = null;
-            String s2 = null;
-            while ((s1 = bufferedReader1.readLine()) != null &&
-                    (s2 = bufferedReader2.readLine()) != null)
-            {
-                SnapShot snapShot1 = SnapShot.fromString(s1);
-                SnapShot snapShot2 = SnapShot.fromString(s2);
-
-                printWriter1.print(snapShot1.time + ",");
-                printWriter2.print(snapShot2.time + ",");
-                for (int i = 0; i < snapShot1.ballList.size(); i++)
-                {
-                    Ball ball1 = snapShot1.ballList.get(i);
-                    Ball ball2 = snapShot2.ballList.get(i);
-                    printWriter1.print(ball1.getX() + ",");
-                    printWriter1.print(ball1.getY() + ",");
-                    printWriter1.print(ball1.getSpeedX() + ",");
-                    printWriter1.print(ball1.getSpeedY() + ",");
-                    printWriter1.print(ball1.getAccelarationX() + ",");
-                    printWriter1.print(ball1.getAccelarationY());
-                    printWriter1.print((i != (snapShot1.ballList.size() - 1) ?
-                            "," : '\n'));
-
-                    printWriter2.print(ball2.getX() + ",");
-                    printWriter2.print(ball2.getY() + ",");
-                    printWriter2.print(ball2.getSpeedX() + ",");
-                    printWriter2.print(ball2.getSpeedY() + ",");
-                    printWriter2.print(ball2.getAccelarationX() + ",");
-                    printWriter2.print(ball2.getAccelarationY());
-                    printWriter2.print((i != (snapShot1.ballList.size() - 1) ?
-                            "," : '\n'));
-                }
-
+            logDirs.add(new File("log/" + arg));
+        }
+        for (int i = 0; i < logDirs.size(); i++) {
+            File[] logFiles = logDirs.get(i).listFiles();
+            File dumpPath = new File("/home/mio/matlab/ballgame/" + args[i]);
+            if (!dumpPath.exists()) {
+                dumpPath.mkdir();
             }
 
-        } catch (IOException e)
-        {
-            e.printStackTrace();
+            for (int j = 0; j < logFiles.length; j++) {
+
+
+                try (
+                        BufferedReader bufferedReader = new BufferedReader(new FileReader(logFiles[j]));
+                        PrintWriter printWriter = new PrintWriter(dumpPath + "/" + logFiles[j].getName(), "utf-8");
+
+                ) {
+                    String s1 = null;
+                    while ((s1 = bufferedReader.readLine()) != null) {
+                        SnapShot snapShot1 = SnapShot.fromString(s1);
+
+                        printWriter.print(snapShot1.time + ",");
+                        for (int k = 0; k < snapShot1.ballList.size(); k++) {
+                            Ball ball = snapShot1.ballList.get(k);
+                            printWriter.print(ball.getX() + ",");
+                            printWriter.print(ball.getY() + ",");
+                            printWriter.print(ball.getSpeedX() + ",");
+                            printWriter.print(ball.getSpeedY() + ",");
+                            printWriter.print(ball.getAccelarationX() + ",");
+                            printWriter.print(ball.getAccelarationY());
+                            printWriter.print((k != (snapShot1.ballList.size() - 1) ?
+                                    "," : '\n'));
+                        }
+
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
 

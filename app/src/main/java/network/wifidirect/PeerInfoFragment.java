@@ -2,6 +2,7 @@ package network.wifidirect;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.*;
 import android.os.Bundle;
@@ -9,9 +10,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+
 import com.njucs.main.MainActivity;
 import com.njucs.main.R;
+
 import constant.Constant;
 import consistencyinfrastructure.group.GroupConfig;
 import consistencyinfrastructure.group.member.SystemNode;
@@ -42,10 +46,10 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
     private WifiP2pGroup group;
 
     public static String TAG = PeerInfoFragment.class.getName();
+    public String consistency;
 
 
-    public void showDetail(WifiP2pDevice device)
-    {
+    public void showDetail(WifiP2pDevice device) {
         this.peerDevice = device;
         this.getView().setVisibility(View.VISIBLE);
         TextView view = (TextView) mContentView.findViewById(R.id.device_address);
@@ -55,27 +59,24 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState)
-    {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         mContentView = inflater.inflate(R.layout.device_detail, null);
+        consistency = getResources().getString(R.string.atomic_consistency);
         mContentView.findViewById(R.id.btn_connect).setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 WifiP2pConfig config = new WifiP2pConfig();
                 config.deviceAddress = peerDevice.deviceAddress;
                 config.wps.setup = WpsInfo.PBC;
-                if (progressDialog != null && progressDialog.isShowing())
-                {
+                if (progressDialog != null && progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
                 progressDialog = ProgressDialog.show(getActivity(), "Press back to cancel",
@@ -97,17 +98,24 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
                 new View.OnClickListener() {
 
                     @Override
-                    public void onClick(View v)
-                    {
+                    public void onClick(View v) {
                         ((PeerListFragment.DeviceActionListener) getActivity()).disconnect();
                     }
                 });
         mContentView.findViewById(R.id.btn_startGame).setOnClickListener(
                 new View.OnClickListener() {
                     @Override
-                    public void onClick(View v)
-                    {
+                    public void onClick(View v) {
                         ((PeerListFragment.DeviceActionListener) getActivity()).startMainActivity(info, serverThread);
+                    }
+                }
+        );
+        mContentView.findViewById(R.id.btn_choose).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(getActivity(), ChooseConsistencyActivity.class);
+                        startActivityForResult(intent, 0);
                     }
                 }
         );
@@ -117,10 +125,15 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
     }
 
     @Override
-    public void onConnectionInfoAvailable(final WifiP2pInfo info)
-    {
-        if (progressDialog != null && progressDialog.isShowing())
-        {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        consistency = data.getStringExtra(getResources().getString(R.string.consistency));
+        ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
+                ": " + consistency);
+    }
+
+    @Override
+    public void onConnectionInfoAvailable(final WifiP2pInfo info) {
+        if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
         this.info = info;
@@ -136,6 +149,9 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
         view = (TextView) mContentView.findViewById(R.id.device_info);
         view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
+        ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
+                ": " + consistency);
+
         // hide the connect button
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
 
@@ -144,136 +160,119 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
 
         mContentView.findViewById(R.id.btn_startGame).setVisibility(View.VISIBLE);
 
+        if (info.isGroupOwner == true)
+            mContentView.findViewById(R.id.btn_choose).setVisibility(View.VISIBLE);
+
 
         // start PollingTime functionality
         if (MainActivity.DEBUG)
             TimePolling.INSTANCE.establishDeviceHostConnection();
 
-        if (info.isGroupOwner == true)
-        {
+        if (info.isGroupOwner == true) {
             if (serverThread != null &&
-                    serverThread.isAlive())
-            {
+                    serverThread.isAlive()) {
                 serverThread.terminate();
                 serverThread = null;
             }
-            if (serverThread == null || !serverThread.isAlive())
-            {
+            if (serverThread == null || !serverThread.isAlive()) {
 
                 final InetAddress ownerAddress = info.groupOwnerAddress;
 
                 ServerThread thread = new ServerThread(
                 ) {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
 
-                        try
-                        {
+                        try {
                             serverSocket = new ServerSocket();
                             serverSocket.setReuseAddress(true);
                             serverSocket.bind(new InetSocketAddress(ownerAddress, Constant.SERVERPORT));
                             Log.d(TAG, "ServerSocket bind success");
 
-                            try
-                            {
+                            try {
 
-                                    try
-                                    {
-                                        final Socket socket = serverSocket.accept();
-                                        Log.d(TAG, "ServerSocket accept success");
+                                try {
+                                    final Socket socket = serverSocket.accept();
+                                    Log.d(TAG, "ServerSocket accept success");
 
-                                        try
-                                        {
-                                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                                                    socket.getInputStream()));
-                                            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+                                    try {
+                                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                                                socket.getInputStream()));
+                                        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
 
-                                            while (true)
-                                            {
-                                                try
-                                                {
-                                                    Thread.sleep(50);
-                                                } catch (InterruptedException e)
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                            Log.d(TAG, "Server start game pressed");
-
-                                            Log.d(TAG, "" + bufferedReader.readLine());
-                                            printWriter.println("Ack");
-                                            Log.d(TAG, "" + bufferedReader.readLine());
-                                            String deviceAddress = socket.getInetAddress().getHostAddress();
-
-                                            if (!new SessionManagerWrapper().isSessionAlive(ownerAddress.getHostAddress(), deviceAddress, 100, 101))
-                                            {
-                                                GroupConfig.INSTANCE.clearReplicas();
-                                                GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress.getHostAddress()));
-                                                GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
-                                                // work around ATO code
-                                                new SessionManagerWrapper()
-                                                        .setNodeID(100)
-                                                        .setNodeName("server")
-                                                        .setNodeIp(ownerAddress.getHostAddress())
-                                                        .setNodeAlgType(AtomicityRegisterClientFactory.MWMR_ATOMICITY)
-                                                        .setOtherID(Arrays.asList(101))
-                                                        .setOtherIp(deviceAddress);
-
-
-                                            }
-                                        } catch (IOException e)
-                                        {
-                                            e.printStackTrace();
-                                        } finally
-                                        {
-                                            try
-                                            {
-                                                socket.close();
-                                            } catch (IOException e)
-                                            {
-                                                e.printStackTrace();
+                                        while (true) {
+                                            try {
+                                                Thread.sleep(50);
+                                            } catch (InterruptedException e) {
+                                                break;
                                             }
                                         }
-                                    } catch (IOException e)
-                                    {
+                                        Log.d(TAG, "Server start game pressed");
+
+                                        Log.d(TAG, "" + bufferedReader.readLine());
+                                        printWriter.println("Ack");
+                                        Log.d(TAG, "" + bufferedReader.readLine());
+                                        printWriter.println(consistency);
+                                        String deviceAddress = socket.getInetAddress().getHostAddress();
+
+                                        if (!new SessionManagerWrapper().isSessionAlive(ownerAddress.getHostAddress(), deviceAddress, 100, 101)) {
+                                            GroupConfig.INSTANCE.clearReplicas();
+                                            GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress.getHostAddress()));
+                                            GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
+                                            // work around ATO code
+                                            new SessionManagerWrapper()
+                                                    .setNodeID(100)
+                                                    .setNodeName("server")
+                                                    .setNodeIp(ownerAddress.getHostAddress())
+                                                    .setNodeAlgType(AtomicityRegisterClientFactory.MWMR_ATOMICITY)
+                                                    .setOtherID(Arrays.asList(101))
+                                                    .setOtherIp(deviceAddress);
+
+
+                                        }
+                                    } catch (IOException e) {
                                         e.printStackTrace();
+                                    } finally {
+                                        try {
+                                            socket.close();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
 
-                            } finally
-                            {
+                            } finally {
                                 serverSocket.close();
 
                             }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-
-                    catch(IOException e)
-                    {
-                        e.printStackTrace();
                     }
-                }
 
-            };
+                };
 
-            this.serverThread = thread;
-            serverThread.start();
+                this.serverThread = thread;
+                serverThread.start();
+
+            }
 
         }
 
     }
 
-}
-
     /**
      * Clears the UI fields after a disconnect or direct mode disable operation.
      */
 
-    public void resetViews()
-    {
+    public void resetViews() {
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.VISIBLE);
         mContentView.findViewById(R.id.btn_disconnect).setVisibility(View.GONE);
         mContentView.findViewById(R.id.btn_startGame).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.btn_choose).setVisibility(View.GONE);
         TextView view = (TextView) mContentView.findViewById(R.id.device_address);
         view.setText(R.string.empty);
         view = (TextView) mContentView.findViewById(R.id.device_info);
@@ -282,6 +281,8 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
         view.setText(R.string.empty);
         view = (TextView) mContentView.findViewById(R.id.status_text);
         view.setText(R.string.empty);
+        view = (TextView) mContentView.findViewById(R.id.group_consistency);
+        view.setText("");
         this.getView().setVisibility(View.GONE);
     }
 
@@ -291,14 +292,11 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
 class ServerThread extends Thread {
     ServerSocket serverSocket;
 
-    public void terminate()
-    {
-        try
-        {
+    public void terminate() {
+        try {
             if (serverSocket != null)
                 serverSocket.close();
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

@@ -5,6 +5,7 @@
 .DS_Store
 /build
 /captures
+/log
 deviceNo1.dat
 deviceNo2.dat
 

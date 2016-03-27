@@ -246,7 +246,7 @@ public class ADBExecutor {
         for (String device : new ArrayList<>(this.execAdbDevices().keySet()))
         {
             sub_directory = this.deviceid_hostname_map.get(device);
-            this.copy(device, src_path, dest_path + "\\" + sub_directory);
+            this.copy(device, src_path, dest_path + "/" + sub_directory + device);
         }
     }
 

@@ -27,4 +27,9 @@
     <string name="group_owner_text">"Am I the Group Owner? "</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
+
+    <string name="weak_consistency">Weak</string>
+    <string name="atomic_consistency">Atomic</string>
+    <string name="causal_consistency">Causal</string>
+    <string name="consistency">Consistency</string>
 </resources>

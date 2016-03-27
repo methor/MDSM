@@ -48,6 +48,7 @@ public class AccelarateSensor implements SensorEventListener {
         Bundle bundle = new Bundle();
         bundle.putFloat("accelarationX", event.values[0] / 9.8f * Constant.MAX_ACC_HORIZONTAL_NORM);
         bundle.putFloat("accelarationY", event.values[1] / 9.8f * Constant.MAX_ACC_VERTICAL_NORM);
+        bundle.putLong("userActTime", System.currentTimeMillis());
         message.setData(bundle);
         message.sendToTarget();
 

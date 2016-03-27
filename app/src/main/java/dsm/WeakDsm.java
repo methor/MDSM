@@ -55,6 +55,7 @@ public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> {
     {
         serverTask.onDestroy();
         KVStoreInMemory.INSTANCE.clean();
+        instance = null;
     }
 
     @Override

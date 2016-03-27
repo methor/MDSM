@@ -69,6 +69,7 @@ public class MWMRAtomicDsm extends AbstractDsm<String, Key, VersionValue> {
     {
         serverTask.onDestroy();
         KVStoreInMemory.INSTANCE.clean();
+        instance = null;
     }
 
 

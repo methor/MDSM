@@ -61,6 +61,7 @@ public class SWMRAtomicDsm extends AbstractDsm<String, Key, VersionValue> {
     {
         serverTask.onDestroy();
         KVStoreInMemory.INSTANCE.clean();
+        instance = null;
     }
 
     @Override

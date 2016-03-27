@@ -1,6 +1,7 @@
 package com.njucs.main;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -95,10 +96,14 @@ public class MainActivity extends Activity {
         //Constant.constantInit(800, 600, 0, 0);
 
         Field.INSTANCE.initiate();
-        dsm = MWMRAtomicDsm.INSTANCE();
-
-
         Bundle extras = getIntent().getExtras();
+        String consistency = extras.getString(getResources().getString(R.string.consistency));
+        if (consistency.equals(getResources().getString(R.string.atomic_consistency)))
+            dsm = MWMRAtomicDsm.INSTANCE();
+        else if (consistency.equals(getResources().getString(R.string.weak_consistency)))
+            dsm = WeakDsm.INSTANCE();
+
+
         //String orientation1 = extras.getString("orientation1");
         //String orientation2 = extras.getString("orientation2");
         int id1 = extras.getInt("id1");

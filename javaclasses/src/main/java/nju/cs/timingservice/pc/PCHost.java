@@ -10,6 +10,7 @@ package nju.cs.timingservice.pc;
 
 import nju.cs.ADBExecutor;
 import nju.cs.SocketUtil;
+import nju.cs.extractdata.ExtractGameState;
 import nju.cs.timingservice.message.*;
 
 import java.io.BufferedReader;
@@ -18,13 +19,17 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class PCHost {
-    private Executor exec = Executors.newFixedThreadPool(5);
+    private ExecutorService exec;
 
     /**
      * pairs of (device, hostport)
@@ -38,8 +43,7 @@ public class PCHost {
      *
      * @param device_hostport_map {@link #device_hostport_map}: map of (device, port)
      */
-    public PCHost(Map<String, Integer> device_hostport_map)
-    {
+    public PCHost(Map<String, Integer> device_hostport_map) {
         this.device_hostport_map = device_hostport_map;
         this.createDeviceHostConnection();
     }
@@ -48,27 +52,27 @@ public class PCHost {
      * Establish connections for each device on a specified port on the host PC
      * and store them in the {@link #device_hostsocket_map} for further use
      */
-    private void createDeviceHostConnection()
-    {
+    private void createDeviceHostConnection() {
         String device = null;
         int host_port = -1;
 
-        for (Map.Entry<String, Integer> device_hostport : this.device_hostport_map.entrySet())
-        {
+        exec = Executors.newFixedThreadPool(5);     // start a new thread pool
+
+        for (Map.Entry<String, Integer> device_hostport : this.device_hostport_map.entrySet()) {
             device = device_hostport.getKey();
             host_port = device_hostport.getValue();
 
             // create socket for each "device" on the "host_port" of host PC
             Socket device_hostsocket = null;
-            try
-            {
-                device_hostsocket = new Socket("localhost", host_port);
-            } catch (UnknownHostException uhe)
-            {
-                uhe.printStackTrace();
-            } catch (IOException ioe)
-            {
-                ioe.printStackTrace();
+            while (true) {
+                try {
+                    device_hostsocket = new Socket("localhost", host_port);
+                    break;      // connect to device successfully
+                } catch (UnknownHostException uhe) {
+                    uhe.printStackTrace();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
             }
 
             // store the sockets created for each "device"
@@ -78,20 +82,20 @@ public class PCHost {
 
     /**
      * Send {@link AuthMsg} to an Android device on the other side of a specified socket
+     *
      * @param host_socket send message via this specified socket
      */
-    private void sendAuthMsg(final Socket host_socket)
-    {
+    private void sendAuthMsg(final Socket host_socket) {
         SocketUtil.INSTANCE.sendMsg(new AuthMsg(), host_socket);
     }
 
     /**
      * Wait for {@link RequestTimeMsg} from Android device
+     *
      * @param host_socket waiting on this specified socket
      * @return {@link RequestTimeMsg} received
      */
-    private Message waitForRequestTimeMsg(final Socket host_socket) throws IOException
-    {
+    private Message waitForRequestTimeMsg(final Socket host_socket) throws IOException {
         Message msg = SocketUtil.INSTANCE.receiveMsg(host_socket);
         assert msg.getType() == Message.REQUEST_TIME_MSG;
         return (RequestTimeMsg) msg;
@@ -99,31 +103,29 @@ public class PCHost {
 
     /**
      * Send {@link ResponseTimeMsg} to an Android device on the other side of a specified socket
+     *
      * @param host_socket send message via this specified socket
      */
-    private void sendResponseTimeMsg(final Socket host_socket)
-    {
+    private void sendResponseTimeMsg(final Socket host_socket) {
         SocketUtil.INSTANCE.sendMsg(new ResponseTimeMsg(System.currentTimeMillis()), host_socket);
     }
 
     /**
      * Send the current system time (denoted by {@link ResponseTimeMsg})
      * to some device attached to the specified socket in a new thread
+     *
      * @param host_socket the message is sent via this socket
      */
-    private void sendResponseTimeMsgInNewThread(final Socket host_socket)
-    {
+    private void sendResponseTimeMsgInNewThread(final Socket host_socket) {
         SocketUtil.INSTANCE.sendMsgInNewThread(new ResponseTimeMsg(System.currentTimeMillis()), host_socket);
     }
 
     /**
      * Core method for starting and providing time-polling service
      */
-    public void startTimePollingService()
-    {
+    public void startTimePollingService() {
         Socket host_socket = null;
-        for (Map.Entry<String, Socket> device_hostsocket : this.device_hostsocket_map.entrySet())
-        {
+        for (Map.Entry<String, Socket> device_hostsocket : this.device_hostsocket_map.entrySet()) {
             host_socket = device_hostsocket.getValue();
 
             /**
@@ -139,13 +141,21 @@ public class PCHost {
              */
             exec.execute(new Alternate(host_socket));
         }
+        exec.shutdown();    // shutdown this thread pool
+        try {
+            while (!exec.awaitTermination(1, TimeUnit.SECONDS)){
+                System.out.println("Exec not terminated");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Core class for providing time-polling service.
      * Alternate: wait for {@link RequestTimeMsg} from Android devices
      * and send {@link ResponseTimeMsg} with system time to them
-     *
+     * <p/>
      * Multi-threaded Issue:
      * It assigns a separate thread for each attached Android device.
      *
@@ -155,36 +165,30 @@ public class PCHost {
     final class Alternate implements Runnable {
         final Socket host_socket;
 
-        public Alternate(Socket host_socket)
-        {
+        public Alternate(Socket host_socket) {
             this.host_socket = host_socket;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Message msg = null;
-            while (true)
-            {
+            while (true) {
 
+                System.out.println("Start Alternate");
 
                 // wait for {@link RequestTimeMsg} from Android device
-                try
-                {
+                try {
                     msg = waitForRequestTimeMsg(host_socket);
-                } catch (IOException e)
-                {
+                } catch (IOException e) {
                     e.printStackTrace();
-                    try
-                    {
+                    try {
                         host_socket.close();
-                    } catch (IOException e1)
-                    {
+                    } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                     break;
                 }
-//				System.out.println("Receiving RequestTimeMsg: " + msg.toString());
+				System.out.println("Receiving RequestTimeMsg: " + msg.toString());
                 // send {@link ResponseTimeMsg} with current system time to Android device
                 sendResponseTimeMsg(host_socket);
             }
@@ -194,43 +198,42 @@ public class PCHost {
     /**
      * close all the host sockets
      */
-    public void shutDown()
-    {
-        for (Map.Entry<String, Socket> device_hostsocket : this.device_hostsocket_map.entrySet())
-        {
-            try
-            {
+    public void shutDown() {
+        for (Map.Entry<String, Socket> device_hostsocket : this.device_hostsocket_map.entrySet()) {
+            try {
                 device_hostsocket.getValue().close();
-            } catch (IOException ioe)
-            {
+            } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
         }
     }
 
-    public static void main(String[] args) throws InterruptedException
-    {
-        ADBExecutor adb_executor = new ADBExecutor("C:\\Users\\Mio\\AppData\\Local\\Android\\sdk\\platform-tools\\adb.exe ");
+    public static void main(String[] args) throws InterruptedException {
+        ADBExecutor adb_executor = new ADBExecutor("adb");
         Map<String, Integer> device_hostport_map = adb_executor.execAdbOnlineDevicesPortForward();
-        final PCHost host = new PCHost(device_hostport_map);
+        while (true) {
+            final PCHost host = new PCHost(device_hostport_map);
 
-        host.startTimePollingService();
+            host.startTimePollingService();
 
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in)))
-        {
-            String s = null;
-            while ((s = bufferedReader.readLine()) != null)
-            {
-                if (s.equals("cp"))
-                    adb_executor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
-                            "C:\\Users\\Mio\\Desktop\\BallGameDir");
+            host.shutDown();
 
+
+
+
+            adb_executor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
+                    "log");
+            Map<String, String> devices = adb_executor.execAdbDevices();
+            List<String> logDirNames = new ArrayList<>();
+            for (Map.Entry<String, String> entry : devices.entrySet()) {
+                logDirNames.add(entry.getValue() + entry.getKey());
             }
-        } catch (IOException e)
-        {
-            e.printStackTrace();
+            ExtractGameState.main(logDirNames.toArray(new String[0]));
+
+
         }
-
     }
-
 }
+
+
+

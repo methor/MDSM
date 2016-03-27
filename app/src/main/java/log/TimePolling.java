@@ -70,6 +70,17 @@ public enum TimePolling {
         new Thread(runnable).start();
     }
 
+    public void closeDeviceHostConnection() {
+        Socket host_socket = TimingService.INSTANCE.getHostSocket();
+        if (host_socket != null && (host_socket.isConnected() && !host_socket.isClosed()))
+            try {
+                host_socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+    }
+
     public long pollingTime() throws Throwable
     {
         return TimingService.INSTANCE.pollingTime();
