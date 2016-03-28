@@ -16,9 +16,27 @@ public class SensorEmulator extends Thread {
 
     public static final String TAG = AccelarateSensor.class.getName();
 
+    public long actNumber = 0;
+
+    public int getSampleInterval() {
+        return sampleInterval;
+    }
+
+    public void setSampleInterval(int sampleInterval) {
+        this.sampleInterval = sampleInterval;
+    }
+
+    public int sampleInterval = 80000;
     public SensorEmulator(GameModel model)
     {
         this.model = model;
+    }
+
+    public SensorEmulator(GameModel model, long actNumber, int sampleInterval)
+    {
+        this.model = model;
+        this.actNumber = actNumber;
+        this.sampleInterval = sampleInterval;
     }
 
     @Override
@@ -28,7 +46,7 @@ public class SensorEmulator extends Thread {
         {
             try
             {
-                Thread.sleep(40);
+                Thread.sleep(sampleInterval);
             } catch (InterruptedException e)
             {
                 break;
@@ -44,8 +62,13 @@ public class SensorEmulator extends Thread {
             Bundle bundle = new Bundle();
             bundle.putFloat("accelarationX", a1 * Constant.MAX_ACC_HORIZONTAL_NORM);
             bundle.putFloat("accelarationY", a2 * Constant.MAX_ACC_VERTICAL_NORM);
+            bundle.putLong("userActTime", System.currentTimeMillis());
+            bundle.putInt("sampleInterval", sampleInterval);
+
             message.setData(bundle);
             message.sendToTarget();
+
+            actNumber++;
         }
     }
 }

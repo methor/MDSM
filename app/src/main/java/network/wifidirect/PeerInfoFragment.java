@@ -149,8 +149,9 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
         view = (TextView) mContentView.findViewById(R.id.device_info);
         view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
-        ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
-                ": " + consistency);
+        if (info.isGroupOwner)
+            ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
+                    ": " + consistency);
 
         // hide the connect button
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);

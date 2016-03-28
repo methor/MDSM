@@ -10,7 +10,11 @@ import android.os.Message;
 import android.util.Log;
 import calc.MotionCalculate;
 import com.njucs.main.MainActivity;
+
+import org.apache.log4j.chainsaw.Main;
+
 import consistencyinfrastructure.data.kvs.Key;
+import consistencyinfrastructure.group.member.SystemNode;
 import dsm.AbstractDsm;
 import dsm.MWMRAtomicDsm;
 import dsm.SWMRAtomicDsm;
@@ -54,6 +58,8 @@ public class GameModel extends Thread {
 
     private int compileCount = 0;
 
+    public long handledNumber = 0;
+
     public GameModel(int id1, int id2, AbstractDsm dsm,
                      Activity activity)
     {
@@ -83,9 +89,15 @@ public class GameModel extends Thread {
     public Key OTHER_KEY = new Key(String.valueOf(SessionManagerWrapper.OTHERID.get(0)));
     public Key GOAL_KEY = new Key(String.valueOf(SnapShot.GOALBALLID));
 
-    public void handleData(float v, float v1, long userActTime)
+    public void handleData(float v, float v1, long userActTime, int sampleInterval)
     {
         SnapShot snapShot = null;
+        float sampleIntervalF = sampleInterval / 1000000f;
+        if (((MainActivity) activity).orientation.equals(ORIENTATION_SOUTH))
+        {
+            v = -v;
+            v1 = -v1;
+        }
         if (dsm instanceof MWMRAtomicDsm)
         {
             /*dsm.put(MY_KEY, String.valueOf(new Random().nextInt()));
@@ -117,7 +129,7 @@ public class GameModel extends Thread {
                 snapShot.setBall(goal);
             }
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
-            MotionCalculate.INSTANCE.updateAll(0.1f);
+            MotionCalculate.INSTANCE.updateAll(sampleIntervalF);
 
             dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID).toString());
 
@@ -153,7 +165,7 @@ public class GameModel extends Thread {
                 snapShot.setBall(goal);
             }
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
-            MotionCalculate.INSTANCE.updateAll(0.1f);
+            MotionCalculate.INSTANCE.updateAll(sampleIntervalF);
 
             dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID));
 
@@ -187,6 +199,9 @@ public class GameModel extends Thread {
             compileCount++;
         }
 
+        handledNumber++;
+
+
 
     }
 
@@ -198,15 +213,17 @@ public class GameModel extends Thread {
         handler = new Handler() {
             public void handleMessage(Message msg)
             {
-                Log.d("MsgHandler", "receive data from sensor");
+                Log.d("MsgHandler", "Current Time: " + System.currentTimeMillis());
                 Bundle bundle = msg.getData();
                 float vx = bundle.getFloat("accelarationX");
                 float vy = bundle.getFloat("accelarationY");
                 long userActTime = bundle.getLong("userActTime");
+                int sampleInterval = bundle.getInt("sampleInterval");
 
-                handleData(vx, vy, userActTime);
+                handleData(vx, vy, userActTime, sampleInterval);
             }
         };
+
 
         Looper.loop();
 

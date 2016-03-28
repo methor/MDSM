@@ -5,12 +5,17 @@ import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
+
+import java.util.ArrayList;
 
 import consistencyinfrastructure.login.SessionManagerWrapper;
 import constant.Constant;
@@ -34,41 +39,46 @@ public class MainActivity extends Activity {
 
     public String orientation;
 
+    public Thread feedbackThread;
+
     public static final String TAG = MainActivity.class.getName();
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
-
-    @Override
-    protected void onPause()
+    private void unregisterDataSource()
     {
-        super.onPause();
         if (DEBUG == true)
             sensorEmulator.interrupt();
         else if (mSensorManager != null)
             mSensorManager.unregisterListener(mAccelarateSensor);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterDataSource();
+
 
     }
 
     @Override
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         super.onDestroy();
+        feedbackThread.interrupt();
         dsm.onDestroy();
         model.onDestroy();
+        unregisterDataSource();
 
 
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         if (DEBUG == false)
             mSensorManager.registerListener(mAccelarateSensor, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                    mSensorManager.SENSOR_DELAY_NORMAL);
-        else
-        {
+                    mAccelarateSensor.getSampleInterval());
+        else {
             sensorEmulator = new SensorEmulator(model);
             sensorEmulator.start();
         }
@@ -76,8 +86,7 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // 全屏显示
@@ -86,7 +95,7 @@ public class MainActivity extends Activity {
         //setContentView(R.layout.activity_connect);
 
 
-        DisplayMetrics metrics = new DisplayMetrics();
+        final DisplayMetrics metrics = new DisplayMetrics();
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.getDefaultDisplay().getMetrics(metrics);
         int height = metrics.heightPixels;
@@ -123,8 +132,7 @@ public class MainActivity extends Activity {
         //P2PNetwork.RESERVED_VALUE.setDSM(dsm);
 
 
-        if (DEBUG == false)
-        {
+        if (DEBUG == false) {
             mAccelarateSensor = new AccelarateSensor(model);
             mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         } else
@@ -134,6 +142,69 @@ public class MainActivity extends Activity {
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(gameView);
 
+        feedbackThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                ArrayList<Long> prevPendingList = new ArrayList<>();
+
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                    long actNumber, handledNumber, pendingNumber;
+                    if (DEBUG == true)
+                        actNumber = sensorEmulator.actNumber;
+                    else
+                        actNumber = mAccelarateSensor.actNumber;
+
+                    handledNumber = model.handledNumber;
+                    pendingNumber = actNumber - handledNumber;
+                    prevPendingList.add(pendingNumber);
+
+                    if (prevPendingList.size() > 2) {
+                        double multiplier = 1;
+                        int sampleInterval = (DEBUG ? sensorEmulator.getSampleInterval()
+                                : mAccelarateSensor.getSampleInterval());
+                        int size = prevPendingList.size();
+                        if (prevPendingList.get(size - 1) > prevPendingList.get(size - 2)
+                                && prevPendingList.get(size - 2) > prevPendingList.get(size - 3)) {
+                            multiplier = 1.2;
+                        } else if (prevPendingList.get(size - 1) <= prevPendingList.get(size - 2) &&
+                                prevPendingList.get(size - 2) <= prevPendingList.get(size - 3)) {
+                            if (prevPendingList.get(size - 1) <= 1)
+                            multiplier = 0.8;
+                        } else if (prevPendingList.get(size - 1) > 1000000f / sampleInterval * 0.3){
+                            multiplier = 1.2;
+                        }
+                        if (!DEBUG) {
+                            if (multiplier != 1) {
+                                sampleInterval = (int) (mAccelarateSensor.getSampleInterval() * multiplier);
+                                mSensorManager.unregisterListener(mAccelarateSensor);
+                                mAccelarateSensor.setSampleInterval(sampleInterval);
+                                mSensorManager.registerListener(mAccelarateSensor, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                                        sampleInterval);
+                            }
+                        } else {
+                            if (multiplier != 1) {
+                                sampleInterval = (int) (sensorEmulator.getSampleInterval() * multiplier);
+                                sensorEmulator.interrupt();
+                                sensorEmulator = new SensorEmulator(model, actNumber, sampleInterval);
+                                sensorEmulator.start();
+                            }
+                        }
+                        Log.d(TAG, "SampleInterval = " + sampleInterval + ", Recent: " + actNumber + ", "
+                            + handledNumber);
+
+
+                    }
+                }
+            }
+        });
+        feedbackThread.start();
 
 
         /**
@@ -184,24 +255,21 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings)
-        {
+        if (id == R.id.action_settings) {
             return true;
         }
 
@@ -209,8 +277,7 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         super.onBackPressed();
     }
 }

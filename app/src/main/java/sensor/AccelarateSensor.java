@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+
 import constant.Constant;
 import model.GameModel;
 
@@ -19,6 +20,18 @@ public class AccelarateSensor implements SensorEventListener {
     private GameModel model;
 
     public static final String TAG = AccelarateSensor.class.getName();
+
+    public int getSampleInterval() {
+        return sampleInterval;
+    }
+
+    public void setSampleInterval(int sampleInterval) {
+        this.sampleInterval = sampleInterval;
+    }
+
+    public int sampleInterval = 80000;
+
+    public long actNumber = 0;
 
     public AccelarateSensor(GameModel model) {
         //this.dsm = dsm;
@@ -49,11 +62,13 @@ public class AccelarateSensor implements SensorEventListener {
         bundle.putFloat("accelarationX", event.values[0] / 9.8f * Constant.MAX_ACC_HORIZONTAL_NORM);
         bundle.putFloat("accelarationY", event.values[1] / 9.8f * Constant.MAX_ACC_VERTICAL_NORM);
         bundle.putLong("userActTime", System.currentTimeMillis());
+        bundle.putInt("sampleInterval", sampleInterval);
         message.setData(bundle);
         message.sendToTarget();
 
-        Log.d(TAG, "accX=" + bundle.getFloat("accelarationX") + ", accY=" + bundle.getFloat("accelarationY"));
+//        Log.d(TAG, "accX=" + bundle.getFloat("accelarationX") + ", accY=" + bundle.getFloat("accelarationY"));
 
+        actNumber++;
 
     }
 

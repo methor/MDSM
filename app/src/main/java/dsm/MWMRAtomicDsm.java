@@ -52,14 +52,14 @@ public class MWMRAtomicDsm extends AbstractDsm<String, Key, VersionValue> {
     @Override
     public VersionValue put(Key key, String val)
     {
-        Log.d(TAG, "issue put");
+//        Log.d(TAG, "issue put");
         return AtomicityRegisterClientFactory.INSTANCE.getAtomicityRegisterClient().put(key, val);
     }
 
     @Override
     public VersionValue get(Key key)
     {
-        Log.d(TAG, "issue get");
+//        Log.d(TAG, "issue get");
         return AtomicityRegisterClientFactory.INSTANCE.getAtomicityRegisterClient().
                 get(key);
     }

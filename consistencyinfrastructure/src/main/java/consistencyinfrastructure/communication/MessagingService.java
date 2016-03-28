@@ -203,7 +203,7 @@ public enum MessagingService implements IReceiver {
         else // TODO: other messages
             return;*/
         String s = msg.getClass().getSimpleName();
-        System.out.println("Message type:" + s);
+//        System.out.println("Message type:" + s);
         receiverMap.get(s).onReceive(msg);
 
     }

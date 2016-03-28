@@ -24,7 +24,7 @@ public class Constant {
     public static float MAX_ACC_HORIZONTAL_NORM;
     public static float MAX_ACC_VERTICAL_NORM;
 
-    public static float TIME_ACROSS_FIELD = 3.5f;    /* constant accelarate with max_acc from 0 to max speed */
+    public static float TIME_ACROSS_FIELD = 4f;    /* constant accelarate with max_acc from 0 to max speed */
 
 
 
@@ -49,10 +49,10 @@ public class Constant {
         MY_GOAL_X = RIVAL_GOAL_X;
         MY_GOAL_Y = FIELD_Y + FIELD_HEIGHT - GOAL_HEIGHT;
 
-        MAX_SPEED_HORIZONTAL_NORM = 2f / TIME_ACROSS_FIELD;
-        MAX_SPEED_VERTICAL_NORM = 2f / TIME_ACROSS_FIELD;
-        MAX_ACC_HORIZONTAL_NORM = (float)(2 / Math.pow((double)TIME_ACROSS_FIELD, 2d));
-        MAX_ACC_VERTICAL_NORM = (float)(2 / Math.pow((double)TIME_ACROSS_FIELD, 2d));
+        MAX_SPEED_HORIZONTAL_NORM = 1f / TIME_ACROSS_FIELD;
+        MAX_SPEED_VERTICAL_NORM = 1f / TIME_ACROSS_FIELD;
+        MAX_ACC_HORIZONTAL_NORM = 1 / MAX_SPEED_HORIZONTAL_NORM;
+        MAX_ACC_VERTICAL_NORM = 1 / MAX_SPEED_VERTICAL_NORM;
     }
 
 
