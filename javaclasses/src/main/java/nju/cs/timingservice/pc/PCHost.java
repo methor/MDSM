@@ -64,15 +64,12 @@ public class PCHost {
 
             // create socket for each "device" on the "host_port" of host PC
             Socket device_hostsocket = null;
-            while (true) {
-                try {
-                    device_hostsocket = new Socket("localhost", host_port);
-                    break;      // connect to device successfully
-                } catch (UnknownHostException uhe) {
-                    uhe.printStackTrace();
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                }
+            try {
+                device_hostsocket = new Socket("localhost", host_port);
+            } catch (UnknownHostException uhe) {
+                uhe.printStackTrace();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
 
             // store the sockets created for each "device"
@@ -85,7 +82,7 @@ public class PCHost {
      *
      * @param host_socket send message via this specified socket
      */
-    private void sendAuthMsg(final Socket host_socket) {
+    private void sendAuthMsg(final Socket host_socket) throws IOException {
         SocketUtil.INSTANCE.sendMsg(new AuthMsg(), host_socket);
     }
 
@@ -106,7 +103,7 @@ public class PCHost {
      *
      * @param host_socket send message via this specified socket
      */
-    private void sendResponseTimeMsg(final Socket host_socket) {
+    private void sendResponseTimeMsg(final Socket host_socket) throws IOException {
         SocketUtil.INSTANCE.sendMsg(new ResponseTimeMsg(System.currentTimeMillis()), host_socket);
     }
 
@@ -134,7 +131,14 @@ public class PCHost {
             if (host_socket == null)
                 throw new AssertionError("socket cannot be null");
 
-            this.sendAuthMsg(host_socket);
+            while (true) {
+                try {
+                    this.sendAuthMsg(host_socket);
+                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             /**
              * Alternate: wait for {@link RequestTimeMsg} from Android devices
              * and send {@link ResponseTimeMsg} with system time to them
@@ -143,7 +147,7 @@ public class PCHost {
         }
         exec.shutdown();    // shutdown this thread pool
         try {
-            while (!exec.awaitTermination(1, TimeUnit.SECONDS)){
+            while (!exec.awaitTermination(1, TimeUnit.SECONDS)) {
                 System.out.println("Exec not terminated");
             }
         } catch (InterruptedException e) {
@@ -177,22 +181,24 @@ public class PCHost {
                 System.out.println("Start Alternate");
 
                 // wait for {@link RequestTimeMsg} from Android device
-                try {
-                    msg = waitForRequestTimeMsg(host_socket);
-                } catch (IOException e) {
-                    e.printStackTrace();
+
                     try {
-                        host_socket.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                        msg = waitForRequestTimeMsg(host_socket);
+                        System.out.println("Receiving RequestTimeMsg: " + msg.toString());
+                        // send {@link ResponseTimeMsg} with current system time to Android device
+                        sendResponseTimeMsg(host_socket);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        try {
+                            host_socket.close();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        break;
                     }
-                    break;
-                }
-				System.out.println("Receiving RequestTimeMsg: " + msg.toString());
-                // send {@link ResponseTimeMsg} with current system time to Android device
-                sendResponseTimeMsg(host_socket);
             }
         }
+
     }
 
     /**
@@ -211,28 +217,25 @@ public class PCHost {
     public static void main(String[] args) throws InterruptedException {
         ADBExecutor adb_executor = new ADBExecutor("adb");
         Map<String, Integer> device_hostport_map = adb_executor.execAdbOnlineDevicesPortForward();
-        while (true) {
-            final PCHost host = new PCHost(device_hostport_map);
+        final PCHost host = new PCHost(device_hostport_map);
 
-            host.startTimePollingService();
+        host.startTimePollingService();
 
-            host.shutDown();
+        Thread.sleep(1000);
 
+        host.shutDown();
 
-
-
-            adb_executor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
-                    "log");
-            Map<String, String> devices = adb_executor.execAdbDevices();
-            List<String> logDirNames = new ArrayList<>();
-            for (Map.Entry<String, String> entry : devices.entrySet()) {
-                logDirNames.add(entry.getValue() + entry.getKey());
-            }
-            ExtractGameState.main(logDirNames.toArray(new String[0]));
-
-
+/*
+        adb_executor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
+                "log");
+        Map<String, String> devices = adb_executor.execAdbDevices();
+        List<String> logDirNames = new ArrayList<>();
+        for (Map.Entry<String, String> entry : devices.entrySet()) {
+            logDirNames.add(entry.getValue() + entry.getKey());
         }
+        ExtractGameState.main(logDirNames.toArray(new String[0]));*/
     }
+
 }
 
 

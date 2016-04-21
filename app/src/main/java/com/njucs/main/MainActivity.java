@@ -1,12 +1,9 @@
 package com.njucs.main;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -22,7 +19,6 @@ import constant.Constant;
 import dsm.AbstractDsm;
 import dsm.MWMRAtomicDsm;
 import dsm.WeakDsm;
-import ics.mobilememo.sharedmemory.atomicity.MWMRAtomicityRegisterClient;
 import model.Field;
 import model.GameModel;
 import sensor.AccelarateSensor;
@@ -35,18 +31,18 @@ public class MainActivity extends Activity {
     private AccelarateSensor mAccelarateSensor;
     private SensorManager mSensorManager;
     private AbstractDsm dsm;
-    private SensorEmulator sensorEmulator;
+    private SensorEmulator sensorEmulator = null;
 
     public String orientation;
 
     public Thread feedbackThread;
+    public boolean feedbackEnabled;
 
     public static final String TAG = MainActivity.class.getName();
 
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
 
-    private void unregisterDataSource()
-    {
+    private void unregisterDataSource() {
         if (DEBUG == true)
             sensorEmulator.interrupt();
         else if (mSensorManager != null)
@@ -65,9 +61,9 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         feedbackThread.interrupt();
-        dsm.onDestroy();
-        model.onDestroy();
         unregisterDataSource();
+        model.onDestroy();
+        dsm.onDestroy();
 
 
     }
@@ -77,10 +73,15 @@ public class MainActivity extends Activity {
         super.onResume();
         if (DEBUG == false)
             mSensorManager.registerListener(mAccelarateSensor, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                    mAccelarateSensor.getSampleInterval());
+                    mAccelarateSensor.getSampleIntervalMicro());
         else {
-            sensorEmulator = new SensorEmulator(model);
+            if (sensorEmulator != null) {
+                sensorEmulator.interrupt();
+                sensorEmulator = new SensorEmulator(model, sensorEmulator.actNumber, sensorEmulator.getSampleIntervalMicro());
+            } else
+                sensorEmulator = new SensorEmulator(model);
             sensorEmulator.start();
+            Log.d(TAG, "sensoremulator start");
         }
 
     }
@@ -106,10 +107,11 @@ public class MainActivity extends Activity {
 
         Field.INSTANCE.initiate();
         Bundle extras = getIntent().getExtras();
-        String consistency = extras.getString(getResources().getString(R.string.consistency));
-        if (consistency.equals(getResources().getString(R.string.atomic_consistency)))
+        String consistency = extras.getString(getString(R.string.consistency));
+        feedbackEnabled = extras.getBoolean(getString(R.string.feedback));
+        if (consistency.equals(getString(R.string.atomic_consistency)))
             dsm = MWMRAtomicDsm.INSTANCE();
-        else if (consistency.equals(getResources().getString(R.string.weak_consistency)))
+        else if (consistency.equals(getString(R.string.weak_consistency)))
             dsm = WeakDsm.INSTANCE();
 
 
@@ -164,42 +166,47 @@ public class MainActivity extends Activity {
                     handledNumber = model.handledNumber;
                     pendingNumber = actNumber - handledNumber;
                     prevPendingList.add(pendingNumber);
+                    int sampleIntervalMicro = (DEBUG ? sensorEmulator.getSampleIntervalMicro()
+                            : mAccelarateSensor.getSampleIntervalMicro());
 
-                    if (prevPendingList.size() > 2) {
-                        double multiplier = 1;
-                        int sampleInterval = (DEBUG ? sensorEmulator.getSampleInterval()
-                                : mAccelarateSensor.getSampleInterval());
-                        int size = prevPendingList.size();
-                        if (prevPendingList.get(size - 1) > prevPendingList.get(size - 2)
-                                && prevPendingList.get(size - 2) > prevPendingList.get(size - 3)) {
-                            multiplier = 1.2;
-                        } else if (prevPendingList.get(size - 1) <= prevPendingList.get(size - 2) &&
-                                prevPendingList.get(size - 2) <= prevPendingList.get(size - 3)) {
-                            if (prevPendingList.get(size - 1) <= 1)
-                            multiplier = 0.8;
-                        } else if (prevPendingList.get(size - 1) > 1000000f / sampleInterval * 0.3){
-                            multiplier = 1.2;
-                        }
-                        if (!DEBUG) {
-                            if (multiplier != 1) {
-                                sampleInterval = (int) (mAccelarateSensor.getSampleInterval() * multiplier);
-                                mSensorManager.unregisterListener(mAccelarateSensor);
-                                mAccelarateSensor.setSampleInterval(sampleInterval);
-                                mSensorManager.registerListener(mAccelarateSensor, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                                        sampleInterval);
+                    if (feedbackEnabled == true) {
+                        if (prevPendingList.size() > 2) {
+                            double multiplier = 1;
+                            int size = prevPendingList.size();
+                            if (prevPendingList.get(size - 1) > prevPendingList.get(size - 2)
+                                    && prevPendingList.get(size - 2) > prevPendingList.get(size - 3)) {
+                                multiplier = 1.2;
+                            } else if (prevPendingList.get(size - 1) <= prevPendingList.get(size - 2) &&
+                                    prevPendingList.get(size - 2) <= prevPendingList.get(size - 3)) {
+                                if (prevPendingList.get(size - 1) <= 1)
+                                    multiplier = 0.8;
+                            } else if (prevPendingList.get(size - 1) > 1000000f / sampleIntervalMicro * 0.3) {
+                                multiplier = 1.2;
                             }
-                        } else {
-                            if (multiplier != 1) {
-                                sampleInterval = (int) (sensorEmulator.getSampleInterval() * multiplier);
-                                sensorEmulator.interrupt();
-                                sensorEmulator = new SensorEmulator(model, actNumber, sampleInterval);
-                                sensorEmulator.start();
+                            if (!DEBUG) {
+                                if (multiplier != 1) {
+                                    sampleIntervalMicro = (int) (mAccelarateSensor.getSampleIntervalMicro() * multiplier);
+                                    mSensorManager.unregisterListener(mAccelarateSensor);
+                                    mAccelarateSensor.setSampleIntervalMicro(sampleIntervalMicro);
+                                    mSensorManager.registerListener(mAccelarateSensor, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                                            sampleIntervalMicro);
+                                }
+                            } else {
+                                if (multiplier != 1) {
+                                    sampleIntervalMicro = (int) (sensorEmulator.getSampleIntervalMicro() * multiplier);
+                                    sensorEmulator.interrupt();
+                                    sensorEmulator = new SensorEmulator(model, actNumber, sampleIntervalMicro);
+                                    sensorEmulator.start();
+                                }
                             }
+                            Log.d(TAG, "SampleInterval = " + sampleIntervalMicro + ", Recent: " + actNumber + ", "
+                                    + handledNumber);
                         }
-                        Log.d(TAG, "SampleInterval = " + sampleInterval + ", Recent: " + actNumber + ", "
-                            + handledNumber);
 
-
+                    }
+                    else
+                    {
+                        Log.d(TAG, "SampleInterval = " + sampleIntervalMicro + ", Recent: " + actNumber + ", " + handledNumber);
                     }
                 }
             }

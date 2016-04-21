@@ -47,12 +47,44 @@
                 android:visibility="gone" />
 
 
+
         </LinearLayout>
+
+        <RadioGroup
+            android:id="@+id/feedback_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/feedback"
+                android:layout_marginRight="8dp"/>
+
+            <RadioButton
+                android:id="@+id/feedback"
+                android:text="@string/yes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="chooseFeedback"
+                android:visibility="visible"/>
+            <RadioButton
+                android:id="@+id/nofeedback"
+                android:text="@string/no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="chooseFeedback"
+                android:visibility="visible"/>
+
+        </RadioGroup>
 
         <TextView
             android:id="@+id/device_address"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:onClick="chooseFeedback"/>
 
         <TextView
             android:id="@+id/device_info"

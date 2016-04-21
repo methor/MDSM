@@ -1,6 +1,5 @@
 package network.wifidirect;
 
-import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
@@ -19,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import com.njucs.main.MainActivity;
@@ -49,6 +49,9 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
     public WifiP2pManager mWifiManager = null;
     private BroadcastReceiver receiver = null;
     public static String TAG = ConnectActivity.class.getName();
+
+
+    public boolean feedbackEnabled;
 
     private boolean isWifiP2pEnabled;
 
@@ -98,6 +101,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
         //toolbar.setSubtitle("Sub title");
 
         setSupportActionBar(toolbar);
+        feedbackEnabled = true;
 
 
         intentFilter = new IntentFilter();
@@ -231,6 +235,29 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
         }
     }
 
+    public void chooseFeedback(View view)
+    {
+        if (!(view instanceof RadioButton))
+            return;
+        boolean checked = ((RadioButton) view).isChecked();
+
+        switch (view.getId())
+        {
+            case R.id.feedback:
+                if (checked)
+                {
+                    feedbackEnabled = true;
+                }
+                break;
+            case R.id.nofeedback:
+                if (checked)
+                {
+                    feedbackEnabled = false;
+                }
+                break;
+        }
+    }
+
 
     public void startMainActivity(final WifiP2pInfo info, final Thread serverThread) {
 
@@ -279,6 +306,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                             Log.d(TAG, "" + bufferedReader.readLine());
                             printWriter.println("Ack");
                             consistency = bufferedReader.readLine();
+                            feedbackEnabled = Boolean.valueOf(bufferedReader.readLine());
 
                             String myIp = socket.getLocalAddress().getHostAddress();
 
@@ -309,12 +337,16 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                 //bundle.putString("orientation2", GameModel.ORIENTATION_SOUTH);
                 bundle.putInt("id1", 100);
                 bundle.putInt("id2", 101);
-                bundle.putString(getResources().getString(R.string.consistency), consistency);
+                if (consistency == null)
+                    throw new RuntimeException();
+                bundle.putString(getString(R.string.consistency), consistency);
+                bundle.putBoolean(getString(R.string.feedback), feedbackEnabled);
                 intent.putExtras(bundle);
 
                 if (progressDialog != null && progressDialog.isShowing())
                     progressDialog.dismiss();
 
+                ((PeerInfoFragment) getFragmentManager().findFragmentById(R.id.frag_detail)).returnFromActivity = true;
                 startActivity(intent, bundle);
             }
         };

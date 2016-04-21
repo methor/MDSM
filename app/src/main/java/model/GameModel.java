@@ -8,22 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import calc.MotionCalculate;
+
 import com.njucs.main.MainActivity;
-
-import org.apache.log4j.chainsaw.Main;
-
-import consistencyinfrastructure.data.kvs.Key;
-import consistencyinfrastructure.group.member.SystemNode;
-import dsm.AbstractDsm;
-import dsm.MWMRAtomicDsm;
-import dsm.SWMRAtomicDsm;
-import consistencyinfrastructure.login.SessionManagerWrapper;
-import dsm.WeakDsm;
-import ics.mobilememo.sharedmemory.data.kvs.VersionValue;
-import log.LogParamsToFile;
-import log.TimePolling;
-import nju.cs.timingservice.TimingService;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,11 +20,24 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import calc.MotionCalculate;
+import consistencyinfrastructure.data.kvs.Key;
+import consistencyinfrastructure.group.member.SystemNode;
+import consistencyinfrastructure.login.SessionManagerWrapper;
+import dsm.AbstractDsm;
+import dsm.MWMRAtomicDsm;
+import dsm.WeakDsm;
+import ics.mobilememo.sharedmemory.data.kvs.VersionValue;
+import log.LogParamsToFile;
+import log.TimePolling;
+import nju.cs.timingservice.TimingService;
+import verification.TaggedValue;
+import verification.ValueTagging;
+
 /**
  * Created by Mio on 2015/12/25.
  */
 public class GameModel extends Thread {
-
 
 
     public static final String ORIENTATION_NORTH = "north";
@@ -54,15 +53,17 @@ public class GameModel extends Thread {
 
     private Activity activity;
 
-    private LogParamsToFile log;
+    private LogParamsToFile logDeviation;
+    private LogParamsToFile logUserLatency;
+    private LogParamsToFile logNetworkLatency;
+    private LogParamsToFile logTaggedValue;
 
     private int compileCount = 0;
 
     public long handledNumber = 0;
 
     public GameModel(int id1, int id2, AbstractDsm dsm,
-                     Activity activity)
-    {
+                     Activity activity) {
 
         ballList.add(new Ball(ORIENTATION_NORTH, id1));
         ballList.add(new Ball(ORIENTATION_SOUTH, id2));
@@ -73,13 +74,20 @@ public class GameModel extends Thread {
         Date date = new Date();
         SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' hh:mm:ss");
         String tag = dsm.getClass().getName();
+        String feedback = (((MainActivity) activity).feedbackEnabled ?
+                "_" + "Feedback" : "");
 
-        log = new LogParamsToFile(activity.getApplication(), tag + "_" +
+        logDeviation = new LogParamsToFile(activity.getApplication(), tag + feedback + "_" +
                 ft.format(date) + ".dat");
+        logUserLatency = new LogParamsToFile(activity.getApplication(), "UserLatency" + "_" + tag + feedback + "_" +
+                ft.format(date) + ".dat");
+        logNetworkLatency = new LogParamsToFile(activity.getApplication(), "NetworkLatency" + "_" +
+                tag + feedback + "_" + ft.format(date) + ".dat");
+        logTaggedValue = new LogParamsToFile(activity.getApplication(), "TaggedValue" + "_" +
+                tag + ft.format(date) + ".dat");
     }
 
-    public List<Ball> getBallList()
-    {
+    public List<Ball> getBallList() {
         return ballList;
     }
 
@@ -89,17 +97,37 @@ public class GameModel extends Thread {
     public Key OTHER_KEY = new Key(String.valueOf(SessionManagerWrapper.OTHERID.get(0)));
     public Key GOAL_KEY = new Key(String.valueOf(SnapShot.GOALBALLID));
 
-    public void handleData(float v, float v1, long userActTime, int sampleInterval)
-    {
+    public void handleData(float v, float v1, long userActTime, int sampleIntervalMicro) {
         SnapShot snapShot = null;
-        float sampleIntervalF = sampleInterval / 1000000f;
-        if (((MainActivity) activity).orientation.equals(ORIENTATION_SOUTH))
-        {
+        float sampleIntervalSecF = sampleIntervalMicro / 1000000f;
+        long processTime, postProcessTime;
+
+        if (((MainActivity) activity).orientation.equals(ORIENTATION_SOUTH)) {
             v = -v;
             v1 = -v1;
         }
-        if (dsm instanceof MWMRAtomicDsm)
+
+        if (MainActivity.DEBUG)     //receive auth message
         {
+            if (compileCount == 0) {
+                try {
+                    TimingService.INSTANCE.receiveAuthMsg();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                compileCount++;
+            }
+        }
+
+        if (MainActivity.DEBUG)
+        {
+            processTime = System.currentTimeMillis();
+            logUserLatency.write(String.valueOf(processTime - userActTime));
+
+        }
+
+
+        if (dsm instanceof MWMRAtomicDsm) {
             /*dsm.put(MY_KEY, String.valueOf(new Random().nextInt()));
             dsm.get(OTHER_KEY);
             dsm.put(OTHER_KEY, String.valueOf(new Random().nextInt()));
@@ -110,117 +138,113 @@ public class GameModel extends Thread {
             myBall.setAccelarationY(v1);
             dsm.put(MY_KEY, myBall.toString());
             VersionValue s = ((MWMRAtomicDsm) dsm).get(OTHER_KEY);
-            if (s.compareTo(((MWMRAtomicDsm) dsm).getReservedValue()) == 0)
-            {
+            if (s.compareTo(((MWMRAtomicDsm) dsm).getReservedValue()) == 0) {
                 //
-            } else
-            {
+            } else {
 
                 Ball rival = Ball.fromString(s.getValue());
                 snapShot.setBall(rival);
             }
             s = ((MWMRAtomicDsm) dsm).get(GOAL_KEY);
-            if (s.compareTo(((MWMRAtomicDsm) dsm).getReservedValue()) == 0)
-            {
+            if (s.compareTo(((MWMRAtomicDsm) dsm).getReservedValue()) == 0) {
                 //
-            } else
-            {
+            } else {
                 Ball goal = Ball.fromString(s.getValue());
                 snapShot.setBall(goal);
             }
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
-            MotionCalculate.INSTANCE.updateAll(sampleIntervalF);
+            MotionCalculate.INSTANCE.updateAll(sampleIntervalSecF);
 
             dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID).toString());
 
-            synchronized (this)
-            {
+            synchronized (this) {
                 ballList = snapShot.ballList;
             }
 
-        }
-        else if (dsm instanceof WeakDsm)
-        {
+        } else if (dsm instanceof WeakDsm) {
             snapShot = new SnapShot(this);
             Ball myBall = snapShot.findBall(SessionManagerWrapper.NODEID);
             myBall.setAccelarationX(v);
             myBall.setAccelarationY(v1);
-            dsm.put(MY_KEY, myBall);
+            // dsm operation 1
+            dsm.put(MY_KEY, ValueTagging.valueTagging(MY_KEY.toString(), myBall));
+            logTaggedValue.write(ValueTagging.valueTagging(MY_KEY.toString(), myBall).toString());
+
+            // dsm operation 2
             Serializable s = dsm.get(OTHER_KEY);
-            if (dsm.getReservedValue().equals(s))
-            {
+            logTaggedValue.write(s.toString());
+            if (dsm.getReservedValue().equals(ValueTagging.tagStripping((TaggedValue)s))) {
                 //
-            } else
-            {
-                Ball rival = ((Ball) s);
+            } else {
+                Ball rival = ((Ball) ValueTagging.tagStripping((TaggedValue)s));
                 snapShot.setBall(rival);
             }
+
+            // dsm operation 3
             s = dsm.get(GOAL_KEY);
-            if (dsm.getReservedValue().equals(s))
-            {
+            logTaggedValue.write(s.toString());
+            if (dsm.getReservedValue().equals(ValueTagging.tagStripping((TaggedValue)s))) {
                 //
-            } else
-            {
-                Ball goal = ((Ball) s);
+            } else {
+                Ball goal = ((Ball) ValueTagging.tagStripping((TaggedValue)s));
                 snapShot.setBall(goal);
             }
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
-            MotionCalculate.INSTANCE.updateAll(sampleIntervalF);
+            MotionCalculate.INSTANCE.updateAll(sampleIntervalSecF);
 
+            // dsm operation 4
             dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID));
+            logTaggedValue.write(s.toString());
 
-            synchronized (this)
-            {
+            synchronized (this) {
                 ballList = snapShot.ballList;
             }
 
         }
+
         if (MainActivity.DEBUG)
         {
-            if (compileCount == 0)
-                try
-                {
-                    TimingService.INSTANCE.receiveAuthMsg();
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
+            postProcessTime = System.currentTimeMillis();
+            logNetworkLatency.write(String.valueOf(postProcessTime - processTime));
+        }
 
-            try
-            {
+
+
+        if (MainActivity.DEBUG) {
+
+            try {
+                long logPre = System.currentTimeMillis();
                 long time = TimePolling.INSTANCE.pollingTime();
-                Log.d(TAG, String.valueOf(time));
+                long logPost = System.currentTimeMillis();
+                Log.d(TAG, "Polling elapse: " + String.valueOf(logPost - logPre));
                 snapShot.time = time;
-                log.write(snapShot.toString());
-            } catch (Throwable throwable)
-            {
+                logDeviation.write(snapShot.toString());
+            } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-            compileCount++;
         }
 
         handledNumber++;
 
 
-
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         Looper.prepare();
 
         handler = new Handler() {
-            public void handleMessage(Message msg)
-            {
-                Log.d("MsgHandler", "Current Time: " + System.currentTimeMillis());
-                Bundle bundle = msg.getData();
-                float vx = bundle.getFloat("accelarationX");
-                float vy = bundle.getFloat("accelarationY");
-                long userActTime = bundle.getLong("userActTime");
-                int sampleInterval = bundle.getInt("sampleInterval");
+            public void handleMessage(Message msg) {
+                if (msg.what == 1) {
+                    Log.d("MsgHandler", "Current Time: " + System.currentTimeMillis());
+                    Bundle bundle = msg.getData();
+                    float vx = bundle.getFloat("accelarationX");
+                    float vy = bundle.getFloat("accelarationY");
+                    long userActTime = bundle.getLong("userActTime");
+                    int sampleInterval = bundle.getInt("sampleIntervalMicro");
 
-                handleData(vx, vy, userActTime, sampleInterval);
+                    handleData(vx, vy, userActTime, sampleInterval);
+                }
             }
         };
 
@@ -229,22 +253,30 @@ public class GameModel extends Thread {
 
     }
 
-    public void onDestroy()
-    {
-        log.close();
-        TimePolling.INSTANCE.closeDeviceHostConnection();
-        MediaScannerConnection.scanFile(activity.getApplication(), new String[]{log.getFile().toString()}, null,
+    public void onDestroy() {
+        handler.getLooper().quit();
+//        try {
+//            handler.getLooper().getThread().join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        logDeviation.close();
+        logUserLatency.close();
+        logNetworkLatency.close();
+        logTaggedValue.close();
+        MediaScannerConnection.scanFile(activity.getApplication(), new String[]{logDeviation.getFile().toString(),
+                        logUserLatency.getFile().toString(), logNetworkLatency.getFile().toString(),
+                        logTaggedValue.getFile().toString()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
-                    public void onScanCompleted(String path, Uri uri)
-                    {
+                    public void onScanCompleted(String path, Uri uri) {
                         Log.i("ExternalStorage", "Scanned " + path + ":");
                         Log.i("ExternalStorage", "-> uri=" + uri);
+                        TimePolling.INSTANCE.closeDeviceHostConnection();
                     }
                 });
     }
 
-    private String getOwnerIp(String s)
-    {
+    private String getOwnerIp(String s) {
         Pattern p = Pattern.compile("SnapShot");
         Matcher matcher = p.matcher(s);
         matcher.find();

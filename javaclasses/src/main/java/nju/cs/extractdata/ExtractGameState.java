@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,35 +33,57 @@ public class ExtractGameState {
                 dumpPath.mkdir();
             }
 
+
             for (int j = 0; j < logFiles.length; j++) {
+                File logFile = logFiles[j];
 
+                if (new File(dumpPath.getPath(), logFile.getName()).exists())
+                    continue;
 
-                try (
-                        BufferedReader bufferedReader = new BufferedReader(new FileReader(logFiles[j]));
-                        PrintWriter printWriter = new PrintWriter(dumpPath + "/" + logFiles[j].getName(), "utf-8");
+                if (logFile.getName().startsWith("NetworkLatency") ||
+                        logFile.getName().startsWith("UserLatency")) {
+                    Path sPath = FileSystems.getDefault().getPath(logFile.getPath());
+                    Path dPath = FileSystems.getDefault().getPath(dumpPath.getPath(), logFile.getName());
+                    try {
+                        Files.copy(sPath, dPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try (
+                            BufferedReader bufferedReader = new BufferedReader(new FileReader(logFile));
+                            PrintWriter printWriter = new PrintWriter(dumpPath + "/" + logFile.getName(), "utf-8");
 
-                ) {
-                    String s1 = null;
-                    while ((s1 = bufferedReader.readLine()) != null) {
-                        SnapShot snapShot1 = SnapShot.fromString(s1);
+                    ) {
+                        String s1 = null;
+                        while ((s1 = bufferedReader.readLine()) != null) {
+                            SnapShot snapShot1 = null;
+                            try {
+                                snapShot1 = SnapShot.fromString(s1);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                System.err.println(logFile.getPath());
+                                System.err.println(s1);
+                            }
 
-                        printWriter.print(snapShot1.time + ",");
-                        for (int k = 0; k < snapShot1.ballList.size(); k++) {
-                            Ball ball = snapShot1.ballList.get(k);
-                            printWriter.print(ball.getX() + ",");
-                            printWriter.print(ball.getY() + ",");
-                            printWriter.print(ball.getSpeedX() + ",");
-                            printWriter.print(ball.getSpeedY() + ",");
-                            printWriter.print(ball.getAccelarationX() + ",");
-                            printWriter.print(ball.getAccelarationY());
-                            printWriter.print((k != (snapShot1.ballList.size() - 1) ?
-                                    "," : '\n'));
+                            printWriter.print(snapShot1.time + ",");
+                            for (int k = 0; k < snapShot1.ballList.size(); k++) {
+                                Ball ball = snapShot1.ballList.get(k);
+                                printWriter.print(ball.getX() + ",");
+                                printWriter.print(ball.getY() + ",");
+                                printWriter.print(ball.getSpeedX() + ",");
+                                printWriter.print(ball.getSpeedY() + ",");
+                                printWriter.print(ball.getAccelarationX() + ",");
+                                printWriter.print(ball.getAccelarationY());
+                                printWriter.print((k != (snapShot1.ballList.size() - 1) ?
+                                        "," : '\n'));
+                            }
+
                         }
 
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         }

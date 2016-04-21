@@ -2,6 +2,8 @@ package sensor;
 
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
+
 import constant.Constant;
 import model.GameModel;
 
@@ -18,25 +20,25 @@ public class SensorEmulator extends Thread {
 
     public long actNumber = 0;
 
-    public int getSampleInterval() {
-        return sampleInterval;
+    public int getSampleIntervalMicro() {
+        return sampleIntervalMicro;
     }
 
-    public void setSampleInterval(int sampleInterval) {
-        this.sampleInterval = sampleInterval;
+    public void setSampleIntervalMicro(int sampleIntervalMicro) {
+        this.sampleIntervalMicro = sampleIntervalMicro;
     }
 
-    public int sampleInterval = 80000;
+    public int sampleIntervalMicro = 100000;
     public SensorEmulator(GameModel model)
     {
         this.model = model;
     }
 
-    public SensorEmulator(GameModel model, long actNumber, int sampleInterval)
+    public SensorEmulator(GameModel model, long actNumber, int sampleIntervalMicro)
     {
         this.model = model;
         this.actNumber = actNumber;
-        this.sampleInterval = sampleInterval;
+        this.sampleIntervalMicro = sampleIntervalMicro;
     }
 
     @Override
@@ -46,9 +48,10 @@ public class SensorEmulator extends Thread {
         {
             try
             {
-                Thread.sleep(sampleInterval);
+                Thread.sleep(sampleIntervalMicro / 1000);
             } catch (InterruptedException e)
             {
+                Log.d(TAG, "interrupted");
                 break;
             }
             Random random = new Random();
@@ -59,16 +62,18 @@ public class SensorEmulator extends Thread {
             if (random.nextFloat() > 0.5)
                 a2 = -a2;
             Message message = Message.obtain(model.handler);
+            message.what = 1;
             Bundle bundle = new Bundle();
             bundle.putFloat("accelarationX", a1 * Constant.MAX_ACC_HORIZONTAL_NORM);
             bundle.putFloat("accelarationY", a2 * Constant.MAX_ACC_VERTICAL_NORM);
             bundle.putLong("userActTime", System.currentTimeMillis());
-            bundle.putInt("sampleInterval", sampleInterval);
+            bundle.putInt("sampleIntervalMicro", sampleIntervalMicro);
 
             message.setData(bundle);
             message.sendToTarget();
 
             actNumber++;
+        Log.d(TAG, "accX=" + bundle.getFloat("accelarationX") + ", accY=" + bundle.getFloat("accelarationY"));
         }
     }
 }

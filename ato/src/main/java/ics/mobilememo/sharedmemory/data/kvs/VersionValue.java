@@ -74,6 +74,22 @@ public class VersionValue implements Comparable<VersionValue>, Serializable
 	}
 
 	/**
+	 * Added by hms.
+	 * A specialized usage of compareTo.
+	 * @param o
+	 * @return
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof VersionValue))
+			return false;
+		if (compareTo(((VersionValue) o)) == 0)
+			return true;
+		else
+			return false;
+	}
+
+	/**
 	 * get the max of two VersionValue according to their versions;
 	 * note that: the caller is responsible for ensuring that
 	 * 	the keys of the two VersionValue are equal.

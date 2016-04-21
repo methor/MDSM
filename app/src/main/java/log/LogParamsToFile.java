@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 /**
  * Created by Mio on 2015/11/10.
@@ -71,20 +72,17 @@ public class LogParamsToFile {
         }
     }
 
-    public File getFile()
-    {
+    public File getFile() {
         return file;
     }
 
-    public void close()
-    {
-        try
-        {
+    public void close() {
+        try {
+            bufferedWriter.flush();
             bufferedWriter.close();
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }
+

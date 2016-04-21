@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.njucs.main.MainActivity;
@@ -47,6 +46,7 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
 
     public static String TAG = PeerInfoFragment.class.getName();
     public String consistency;
+    public boolean returnFromActivity = true;
 
 
     public void showDetail(WifiP2pDevice device) {
@@ -121,6 +121,7 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
         );
 
 
+
         return mContentView;
     }
 
@@ -133,134 +134,144 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
 
     @Override
     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
+        if (returnFromActivity == false)
+        {
+            return;
         }
-        this.info = info;
-        this.getView().setVisibility(View.VISIBLE);
-
-        // The owner IP is now known.
-        TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
-        view.setText("am I group owner? "
-                + ((info.isGroupOwner == true) ? "yes"
-                : "no"));
-
-        // InetAddress from WifiP2pInfo struct.
-        view = (TextView) mContentView.findViewById(R.id.device_info);
-        view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
-
-        if (info.isGroupOwner)
-            ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
-                    ": " + consistency);
-
-        // hide the connect button
-        mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
-
-        // reveal startGame button
-        mContentView.findViewById(R.id.btn_disconnect).setVisibility(View.VISIBLE);
-
-        mContentView.findViewById(R.id.btn_startGame).setVisibility(View.VISIBLE);
-
-        if (info.isGroupOwner == true)
-            mContentView.findViewById(R.id.btn_choose).setVisibility(View.VISIBLE);
-
-
-        // start PollingTime functionality
-        if (MainActivity.DEBUG)
-            TimePolling.INSTANCE.establishDeviceHostConnection();
-
-        if (info.isGroupOwner == true) {
-            if (serverThread != null &&
-                    serverThread.isAlive()) {
-                serverThread.terminate();
-                serverThread = null;
+        if (returnFromActivity == true) {
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
             }
-            if (serverThread == null || !serverThread.isAlive()) {
+            this.info = info;
+            this.getView().setVisibility(View.VISIBLE);
 
-                final InetAddress ownerAddress = info.groupOwnerAddress;
+            // The owner IP is now known.
+            TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
+            view.setText("am I group owner? "
+                    + ((info.isGroupOwner == true) ? "yes"
+                    : "no"));
 
-                ServerThread thread = new ServerThread(
-                ) {
-                    @Override
-                    public void run() {
+            // InetAddress from WifiP2pInfo struct.
+            view = (TextView) mContentView.findViewById(R.id.device_info);
+            view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
-                        try {
-                            serverSocket = new ServerSocket();
-                            serverSocket.setReuseAddress(true);
-                            serverSocket.bind(new InetSocketAddress(ownerAddress, Constant.SERVERPORT));
-                            Log.d(TAG, "ServerSocket bind success");
+            if (info.isGroupOwner) {
+                ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
+                        ": " + consistency);
+                getActivity().findViewById(R.id.feedback_group).setVisibility(View.VISIBLE);
+            }
+
+            // hide the connect button
+            mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
+
+            // reveal startGame button
+            mContentView.findViewById(R.id.btn_disconnect).setVisibility(View.VISIBLE);
+
+            mContentView.findViewById(R.id.btn_startGame).setVisibility(View.VISIBLE);
+
+            if (info.isGroupOwner == true)
+                mContentView.findViewById(R.id.btn_choose).setVisibility(View.VISIBLE);
+
+
+            // start PollingTime functionality
+            if (MainActivity.DEBUG)
+                TimePolling.INSTANCE.establishDeviceHostConnection();
+
+            if (info.isGroupOwner == true) {
+                if (serverThread != null &&
+                        serverThread.isAlive()) {
+                    serverThread.terminate();
+                    serverThread = null;
+                }
+                if (serverThread == null || !serverThread.isAlive()) {
+
+                    final InetAddress ownerAddress = info.groupOwnerAddress;
+
+                    ServerThread thread = new ServerThread(
+                    ) {
+                        @Override
+                        public void run() {
 
                             try {
+                                serverSocket = new ServerSocket();
+                                serverSocket.setReuseAddress(true);
+                                serverSocket.bind(new InetSocketAddress(ownerAddress, Constant.SERVERPORT));
+                                Log.d(TAG, "ServerSocket bind success");
 
                                 try {
-                                    final Socket socket = serverSocket.accept();
-                                    Log.d(TAG, "ServerSocket accept success");
 
                                     try {
-                                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                                                socket.getInputStream()));
-                                        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+                                        final Socket socket = serverSocket.accept();
+                                        Log.d(TAG, "ServerSocket accept success");
 
-                                        while (true) {
-                                            try {
-                                                Thread.sleep(50);
-                                            } catch (InterruptedException e) {
-                                                break;
+                                        try {
+                                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                                                    socket.getInputStream()));
+                                            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+
+                                            while (true) {
+                                                try {
+                                                    Thread.sleep(50);
+                                                } catch (InterruptedException e) {
+                                                    break;
+                                                }
                                             }
-                                        }
-                                        Log.d(TAG, "Server start game pressed");
+                                            Log.d(TAG, "Server start game pressed");
 
-                                        Log.d(TAG, "" + bufferedReader.readLine());
-                                        printWriter.println("Ack");
-                                        Log.d(TAG, "" + bufferedReader.readLine());
-                                        printWriter.println(consistency);
-                                        String deviceAddress = socket.getInetAddress().getHostAddress();
+                                            Log.d(TAG, "" + bufferedReader.readLine());
+                                            printWriter.println("Ack");
+                                            Log.d(TAG, "" + bufferedReader.readLine());
+                                            printWriter.println(consistency);
+                                            printWriter.println(((ConnectActivity) getActivity()).feedbackEnabled);
+                                            String deviceAddress = socket.getInetAddress().getHostAddress();
 
-                                        if (!new SessionManagerWrapper().isSessionAlive(ownerAddress.getHostAddress(), deviceAddress, 100, 101)) {
-                                            GroupConfig.INSTANCE.clearReplicas();
-                                            GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress.getHostAddress()));
-                                            GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
-                                            // work around ATO code
-                                            new SessionManagerWrapper()
-                                                    .setNodeID(100)
-                                                    .setNodeName("server")
-                                                    .setNodeIp(ownerAddress.getHostAddress())
-                                                    .setNodeAlgType(AtomicityRegisterClientFactory.MWMR_ATOMICITY)
-                                                    .setOtherID(Arrays.asList(101))
-                                                    .setOtherIp(deviceAddress);
+                                            if (!new SessionManagerWrapper().isSessionAlive(ownerAddress.getHostAddress(), deviceAddress, 100, 101)) {
+                                                GroupConfig.INSTANCE.clearReplicas();
+                                                GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress.getHostAddress()));
+                                                GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
+                                                // work around ATO code
+                                                new SessionManagerWrapper()
+                                                        .setNodeID(100)
+                                                        .setNodeName("server")
+                                                        .setNodeIp(ownerAddress.getHostAddress())
+                                                        .setNodeAlgType(AtomicityRegisterClientFactory.MWMR_ATOMICITY)
+                                                        .setOtherID(Arrays.asList(101))
+                                                        .setOtherIp(deviceAddress);
 
 
+                                            }
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        } finally {
+                                            try {
+                                                socket.close();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
                                         }
                                     } catch (IOException e) {
                                         e.printStackTrace();
-                                    } finally {
-                                        try {
-                                            socket.close();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
                                     }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+
+
+                                } finally {
+                                    serverSocket.close();
+
                                 }
-
-
-                            } finally {
-                                serverSocket.close();
-
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
-                    }
 
-                };
+                    };
 
-                this.serverThread = thread;
-                serverThread.start();
+                    this.serverThread = thread;
+                    returnFromActivity = false;
+                    serverThread.start();
+
+                }
 
             }
-
         }
 
     }
@@ -274,6 +285,7 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
         mContentView.findViewById(R.id.btn_disconnect).setVisibility(View.GONE);
         mContentView.findViewById(R.id.btn_startGame).setVisibility(View.GONE);
         mContentView.findViewById(R.id.btn_choose).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.feedback_group).setVisibility(View.GONE);
         TextView view = (TextView) mContentView.findViewById(R.id.device_address);
         view.setText(R.string.empty);
         view = (TextView) mContentView.findViewById(R.id.device_info);
@@ -286,6 +298,7 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
         view.setText("");
         this.getView().setVisibility(View.GONE);
     }
+
 
 
 }
