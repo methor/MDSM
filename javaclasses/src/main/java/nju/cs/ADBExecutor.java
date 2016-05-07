@@ -20,6 +20,10 @@ public class ADBExecutor {
     public static final int ANDROID_PORT = 30001;
     public static final int HOST_BASE_PORT = 35000;
 
+    /*
+     * KeySet: device series number
+     * ValueSet: device product. Device model is ambiguous, since adb's result and Build.MODEL differ.
+     */
     private final Map<String, String> deviceid_hostname_map = new HashMap<>();
 
     /**
@@ -102,7 +106,7 @@ public class ADBExecutor {
                         device_id = info;
                 }
                 String[] subparts = info.split(":");
-                if (subparts[0].equals("model"))
+                if (subparts[0].equals("product"))
                     device_name = subparts[1];
             }
             if (device_id != null)
@@ -242,11 +246,11 @@ public class ADBExecutor {
      */
     public void copyFromAll(String src_path, String dest_path)
     {
-        String sub_directory = null;
-        for (String device : new ArrayList<>(this.execAdbDevices().keySet()))
+        String product = null;
+        for (String series : new ArrayList<>(this.execAdbDevices().keySet()))
         {
-            sub_directory = this.deviceid_hostname_map.get(device);
-            this.copy(device, src_path, dest_path + "/" + sub_directory + device);
+            product = this.deviceid_hostname_map.get(series);
+            this.copy(series, src_path, dest_path + "/" + product + series);
         }
     }
 

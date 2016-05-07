@@ -9,6 +9,7 @@ import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -87,6 +88,11 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d(TAG, Build.MODEL);
+        Log.d(TAG, Build.PRODUCT);
+        Log.d(TAG, Build.BRAND);
+        Log.d(TAG, Build.SERIAL);
 
         setContentView(R.layout.activity_connect);
 

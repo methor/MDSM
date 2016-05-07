@@ -81,6 +81,26 @@ public class SessionManagerWrapper extends SessionManager {
         return true;
     }
 
+    public static int getLeader()
+    {
+        int min = NODEID;
+        for (int nodeID : OTHERID)
+        {
+            if (min > nodeID)
+                min = nodeID;
+        }
+
+        return min;
+
+    }
+
+    public static boolean isLeader()
+    {
+        if (NODEID == getLeader())
+            return true;
+        return false;
+    }
+
     public boolean isIpChanged(String nodeIp)
     {
         return !nodeIp.equals(NODEIP);

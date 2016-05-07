@@ -23,6 +23,7 @@ import model.Field;
 import model.GameModel;
 import sensor.AccelarateSensor;
 import sensor.SensorEmulator;
+import verification.ValueTagging;
 import view.GameView;
 
 public class MainActivity extends Activity {
@@ -64,6 +65,7 @@ public class MainActivity extends Activity {
         unregisterDataSource();
         model.onDestroy();
         dsm.onDestroy();
+        ValueTagging.reset();
 
 
     }

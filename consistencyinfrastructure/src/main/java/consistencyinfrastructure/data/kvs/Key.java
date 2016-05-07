@@ -40,7 +40,7 @@ public class Key implements Serializable
 	@Override
 	public String toString()
 	{
-		return "Key: " + this.key_str;
+		return "Key:" + this.key_str;
 	}
 
 	/**

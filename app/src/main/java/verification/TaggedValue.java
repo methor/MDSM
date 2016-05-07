@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class TaggedValue implements Serializable{
 
     private static final long serialVersionUID = -650241136137512535L;
+
     String device;
     String variable;
     int sID;
@@ -28,5 +29,23 @@ public class TaggedValue implements Serializable{
                 ", sID=" + sID +
                 ", value=" + value +
                 '}';
+    }
+
+    public String getTag()
+    {
+        return device + " " + variable + " " + sID;
+    }
+
+    public static TaggedValue getTaggedValueFromTag(String tag)
+    {
+        String[] items = tag.split(" ");
+        if (items.length != 3)
+            return null;
+        return new TaggedValue(items[0], items[1], Integer.valueOf(items[2]), null);
+    }
+
+    public String getVariable()
+    {
+        return variable;
     }
 }

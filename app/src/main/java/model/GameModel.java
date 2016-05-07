@@ -33,6 +33,7 @@ import log.TimePolling;
 import nju.cs.timingservice.TimingService;
 import verification.TaggedValue;
 import verification.ValueTagging;
+import weakconsistency.ReservedValue;
 
 /**
  * Created by Mio on 2015/12/25.
@@ -72,7 +73,7 @@ public class GameModel extends Thread {
         this.dsm = dsm;
         this.activity = activity;
         Date date = new Date();
-        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' hh:mm:ss");
+        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' HH:mm:ss");
         String tag = dsm.getClass().getName();
         String feedback = (((MainActivity) activity).feedbackEnabled ?
                 "_" + "Feedback" : "");
@@ -166,26 +167,43 @@ public class GameModel extends Thread {
             Ball myBall = snapShot.findBall(SessionManagerWrapper.NODEID);
             myBall.setAccelarationX(v);
             myBall.setAccelarationY(v1);
+
+            //
+            if (handledNumber == 0)
+            {
+                logTaggedValue.write("W" + " " + ValueTagging.valueTagging(MY_KEY.toString(),
+                        ReservedValue.RESERVED_VALUE, 0).getTag());
+                if (SessionManagerWrapper.isLeader())
+                    logTaggedValue.write("W" + " " + ValueTagging.valueTagging(GOAL_KEY.toString(),
+                            ReservedValue.RESERVED_VALUE, 0).getTag());
+            }
+
             // dsm operation 1
-            dsm.put(MY_KEY, ValueTagging.valueTagging(MY_KEY.toString(), myBall));
-            logTaggedValue.write(ValueTagging.valueTagging(MY_KEY.toString(), myBall).toString());
+            Serializable s = ValueTagging.valueTagging(MY_KEY.toString(), myBall);
+            dsm.put(MY_KEY, s);
+            logTaggedValue.write("W"+ " " + ((TaggedValue)s).getTag());
 
             // dsm operation 2
-            Serializable s = dsm.get(OTHER_KEY);
-            logTaggedValue.write(s.toString());
-            if (dsm.getReservedValue().equals(ValueTagging.tagStripping((TaggedValue)s))) {
+            s = dsm.get(OTHER_KEY);
+
+            if (dsm.getReservedValue().equals(s)) {
                 //
+                logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
+                .OTHERID.get(0)), OTHER_KEY.toString(), 0, s).getTag());
             } else {
+                logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
                 Ball rival = ((Ball) ValueTagging.tagStripping((TaggedValue)s));
                 snapShot.setBall(rival);
             }
 
             // dsm operation 3
             s = dsm.get(GOAL_KEY);
-            logTaggedValue.write(s.toString());
-            if (dsm.getReservedValue().equals(ValueTagging.tagStripping((TaggedValue)s))) {
+            if (dsm.getReservedValue().equals(s)) {
                 //
+                logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
+                .getLeader()), GOAL_KEY.toString(), 0, s).getTag());
             } else {
+                logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
                 Ball goal = ((Ball) ValueTagging.tagStripping((TaggedValue)s));
                 snapShot.setBall(goal);
             }
@@ -193,8 +211,10 @@ public class GameModel extends Thread {
             MotionCalculate.INSTANCE.updateAll(sampleIntervalSecF);
 
             // dsm operation 4
-            dsm.put(GOAL_KEY, snapShot.findBall(SnapShot.GOALBALLID));
-            logTaggedValue.write(s.toString());
+            s = ValueTagging.valueTagging(GOAL_KEY.toString(),
+                    snapShot.findBall(SnapShot.GOALBALLID));
+            dsm.put(GOAL_KEY, s);
+            logTaggedValue.write("W" + " " + ((TaggedValue) s).getTag());
 
             synchronized (this) {
                 ballList = snapShot.ballList;
