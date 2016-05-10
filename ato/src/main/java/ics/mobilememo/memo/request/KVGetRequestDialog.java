@@ -29,7 +29,7 @@ public class KVGetRequestDialog extends KVRequestDialog
 	@Override
 	public VersionValue onRequestPerformed()
 	{
-//		return AtomicityRegisterClient.ATO.get(super.request_key);
+//		return AtomicityRegisterClient.MATO.get(super.request_key);
 		return AtomicityRegisterClientFactory.INSTANCE.getAtomicityRegisterClient().get(super.request_key);
 	}
 

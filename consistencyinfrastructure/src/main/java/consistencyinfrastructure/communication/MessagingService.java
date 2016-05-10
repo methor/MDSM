@@ -25,10 +25,10 @@ import java.util.concurrent.TimeUnit;
  * Singleton pattern with Java Enum which is simple and thread-safe
  */
 public enum MessagingService implements IReceiver {
-    ATO, WEAK;
+    MATO, SATO, WEAK, CAUSAL;
 
 
-    ConcurrentHashMap<String, IReceiver> receiverMap = new ConcurrentHashMap<>();
+    IReceiver receiver = null;
 
     ConcurrentHashMap<String, SocketOut> clientMap = new ConcurrentHashMap<>();
 
@@ -99,7 +99,7 @@ public enum MessagingService implements IReceiver {
             }
         };
 
-        if (this == WEAK)
+        if (this == WEAK || this == CAUSAL)
             runnable.run();
         else
         {
@@ -199,18 +199,18 @@ public enum MessagingService implements IReceiver {
     public void onReceive(IPMessage msg)
     {
         /*if (msg instanceof AtomicityMessage)
-            AtomicityMessagingService.ATO.onReceive(msg);
+            AtomicityMessagingService.MATO.onReceive(msg);
         else // TODO: other messages
             return;*/
         String s = msg.getClass().getSimpleName();
 //        System.out.println("Message type:" + s);
-        receiverMap.get(s).onReceive(msg);
+        receiver.onReceive(msg);
 
     }
 
     public int getServerPort()
     {
-        if (this == ATO)
+        if (this == MATO)
             return NetworkConfig.NETWORK_PORT;
         else if (this == WEAK)
             return NetworkConfig.NETWORK_PORT + 1;
@@ -218,10 +218,9 @@ public enum MessagingService implements IReceiver {
             return NetworkConfig.NETWORK_PORT + 100;
     }
 
-    public MessagingService registerReceiver(String s, IReceiver receiver)
+    public MessagingService registerReceiver(IReceiver receiver)
     {
-        System.out.println(s + " " + receiver.getClass());
-        receiverMap.putIfAbsent(s, receiver);
+        this.receiver = receiver;
         return this;
     }
 

@@ -58,7 +58,7 @@ public enum AtomicityMessagingService implements IReceiver
 		if (msg instanceof AtomicityReadPhaseMessage || msg instanceof AtomicityWritePhaseMessage)
 			AtomicityRegisterServer.INSTANCE.handleAtomicityMessage((AtomicityMessage) msg);
 		else // (msg instanceof AtomicityReadAckPhaseMessage || msg instanceof AtomicityWriteAckPhaseMessage)
-//			AtomicityRegisterClient.ATO.handleAtomicityMessage((AtomicityMessage) msg);
+//			AtomicityRegisterClient.MATO.handleAtomicityMessage((AtomicityMessage) msg);
 			AtomicityRegisterClientFactory.INSTANCE.getAtomicityRegisterClient().handleAtomicityMessage((AtomicityMessage) msg);
 	}
 

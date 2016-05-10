@@ -11,8 +11,9 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/ato" />
+            <option value="$PROJECT_DIR$/causalconsistency" />
             <option value="$PROJECT_DIR$/consistencyinfrastructure" />
-            <option value="$PROJECT_DIR$/javaclasses" />
+            <option value="$PROJECT_DIR$/hostutilities" />
             <option value="$PROJECT_DIR$/weakconsistency" />
           </set>
         </option>

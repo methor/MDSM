@@ -280,7 +280,7 @@ public abstract class AbstractAtomicityRegisterClient implements
 				{
 					if (turn.get(replica_ip) == Communication.HERE) // it is my turn (PING)
 					{
-						MessagingService.ATO.sendOneWay(replica_ip, atomicity_message); // send message to each server replica
+						MessagingService.MATO.sendOneWay(replica_ip, atomicity_message); // send message to each server replica
 
 						turn.put(replica_ip, Communication.THERE); // it is your turn now (PONG)
 						status.put(replica_ip, Communication.NOT_ACK);
@@ -335,7 +335,7 @@ public abstract class AbstractAtomicityRegisterClient implements
 				switch (this.status.get(from_ip))
 				{
 					case Communication.NOT_SENT: // ack of an old message
-						MessagingService.ATO.sendOneWay(from_ip, this.atomicity_message); // re-send the rmsg
+						MessagingService.MATO.sendOneWay(from_ip, this.atomicity_message); // re-send the rmsg
 						this.turn.put(from_ip, Communication.THERE);
 						this.status.put(from_ip, Communication.NOT_ACK);
 						// this.latch_majority.countDown();	// Don't count acks of old messages (Jul 2, 2014)

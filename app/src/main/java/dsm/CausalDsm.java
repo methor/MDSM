@@ -1,38 +1,39 @@
 package dsm;
 
 
+import java.io.Serializable;
+
+import causalconsistency.CausalConsistencyClient;
+import causalconsistency.CausalConsistencyMessagingService;
+import causalconsistency.KVStoreInMemory;
+import causalconsistency.ReservedValue;
 import consistencyinfrastructure.communication.MessagingService;
 import consistencyinfrastructure.data.kvs.Key;
 import consistencyinfrastructure.login.SessionManager;
-import weakconsistency.KVStoreInMemory;
-import weakconsistency.ReservedValue;
-import weakconsistency.WeakConsistencyClient;
-import weakconsistency.WeakConsistencyMessagingService;
 
-import java.io.Serializable;
 
 /**
  * Created by Mio on 2016/3/7.
  */
-public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> {
+public class CausalDsm extends AbstractDsm<Serializable, Key, Serializable> {
 
 
-    private static WeakDsm instance = null;
+    private static CausalDsm instance = null;
 
     private MessagingService.ServerTask serverTask;
 
-    private WeakDsm()
+    private CausalDsm()
     {
-        MessagingService.WEAK.registerReceiver(WeakConsistencyMessagingService.INSTANCE);
-        serverTask = MessagingService.WEAK.new ServerTask(SessionManager.getNewInstance().getNodeIp());
+        MessagingService.CAUSAL.registerReceiver(CausalConsistencyMessagingService.INSTANCE);
+        serverTask = MessagingService.CAUSAL.new ServerTask(SessionManager.getNewInstance().getNodeIp());
         serverTask.start();
     }
 
 
-    public synchronized static WeakDsm INSTANCE()
+    public synchronized static CausalDsm INSTANCE()
     {
         if (instance == null)
-            instance = new WeakDsm();
+            instance = new CausalDsm();
         return instance;
     }
 
@@ -40,14 +41,14 @@ public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> {
     public Serializable put(Key key, Serializable val)
     {
         //// TODO: 2016/3/7
-        return WeakConsistencyClient.INSTANCE.put(key, val);
+        return CausalConsistencyClient.INSTANCE.put(key, val);
 
     }
 
     @Override
     public Serializable get(Key key)
     {
-        return WeakConsistencyClient.INSTANCE.get(key);
+        return CausalConsistencyClient.INSTANCE.get(key);
     }
 
     @Override

@@ -9,4 +9,5 @@ package consistencyinfrastructure.architecture;
 
 public interface IRegisterServer
 {
+
 }

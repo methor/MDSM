@@ -23,9 +23,9 @@ public class SWMRAtomicDsm extends AbstractDsm<String, Key, VersionValue> {
         {
             AtomicityRegisterClientFactory.INSTANCE.setAtomicityRegisterClient(
                     AtomicityRegisterClientFactory.SWMR_ATOMICITY);
-            MessagingService.ATO.registerReceiver("AtomicityMessage", AtomicityMessagingService.INSTANCE);
+            MessagingService.SATO.registerReceiver(AtomicityMessagingService.INSTANCE);
 
-            serverTask = MessagingService.ATO.new ServerTask(SessionManager.getNewInstance().getNodeIp());
+            serverTask = MessagingService.SATO.new ServerTask(SessionManager.getNewInstance().getNodeIp());
             serverTask.start();
 
         } catch (AtomicityRegisterClientFactory.NoSuchAtomicAlgorithmSupported noSuchAtomicAlgorithmSupported)

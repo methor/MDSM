@@ -8,8 +8,9 @@ package consistencyinfrastructure.group.member;
 
 
 import java.io.Serializable;
+import java.util.Comparator;
 
-public class SystemNode implements Serializable
+public class SystemNode implements Serializable, Comparable
 {
 	private static final long serialVersionUID = 2642974560070519463L;
 
@@ -184,5 +185,11 @@ public class SystemNode implements Serializable
 			.append('@').append(this.node_ip);
 		
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		SystemNode node = (SystemNode)o;
+		return new Integer(this.node_id).compareTo(new Integer(node.node_id));
 	}
 }

@@ -126,7 +126,7 @@ public enum AtomicityRegisterClient implements
 	 */
 	private Version getNextVersion(Version old_ver)
 	{
-//		return old_ver.increment(SystemConfig.ATO.getPid());
+//		return old_ver.increment(SystemConfig.MATO.getPid());
 		return old_ver.increment(SessionManager.getNewInstance().getNodeId());
 	}
 
@@ -160,7 +160,7 @@ public enum AtomicityRegisterClient implements
 	 */
 	private Map<String, AtomicityMessage> readPhase(Key key)
 	{
-		AtomicityMessage atomicity_read_phase_message = new AtomicityReadPhaseMessage(/** SystemConfig.ATO.getIP(), **/ SessionManager.getNewInstance().getNodeIp(), this.op_cnt, key);
+		AtomicityMessage atomicity_read_phase_message = new AtomicityReadPhaseMessage(/** SystemConfig.MATO.getIP(), **/ SessionManager.getNewInstance().getNodeIp(), this.op_cnt, key);
 		this.comm = new Communication(atomicity_read_phase_message);
 		return this.comm.communicate();
 	}
@@ -173,7 +173,7 @@ public enum AtomicityRegisterClient implements
 	 */
 	private void writePhase(Key key, VersionValue vval)
 	{
-		AtomicityMessage atomicity_write_phase_message = new AtomicityWritePhaseMessage(/** SystemConfig.ATO.getIP(), **/ SessionManager.getNewInstance().getNodeIp(), this.op_cnt, key, vval);
+		AtomicityMessage atomicity_write_phase_message = new AtomicityWritePhaseMessage(/** SystemConfig.MATO.getIP(), **/ SessionManager.getNewInstance().getNodeIp(), this.op_cnt, key, vval);
 		this.comm = new Communication(atomicity_write_phase_message);
 		this.comm.communicate();
 	}
@@ -253,7 +253,7 @@ public enum AtomicityRegisterClient implements
 				String ip = replica_list.get(i).getNodeIp();
 				if (turn.get(ip) == Communication.HERE)	// it is my turn (ping)
 				{
-					MessagingService.ATO.sendOneWay(ip, atomicity_message);	// send message to each replica
+					MessagingService.MATO.sendOneWay(ip, atomicity_message);	// send message to each replica
 
 					turn.put(ip, Communication.THERE);	// it is your turn now (pong)
 					status.put(ip, Communication.NOT_ACK);
@@ -305,7 +305,7 @@ public enum AtomicityRegisterClient implements
 			switch (this.status.get(from_ip))
 			{
 				case Communication.NOT_SENT:	// ack of an old message
-					MessagingService.ATO.sendOneWay(from_ip, this.atomicity_message);	// re-send the rmsg
+					MessagingService.MATO.sendOneWay(from_ip, this.atomicity_message);	// re-send the rmsg
 					this.turn.put(from_ip, Communication.THERE);
 					this.status.put(from_ip, Communication.NOT_ACK);
 

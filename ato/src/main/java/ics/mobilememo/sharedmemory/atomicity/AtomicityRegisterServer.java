@@ -58,9 +58,9 @@ public enum AtomicityRegisterServer implements IAtomicityMessageHandler
 			 * in the server replica
 			 *//*
 			case READ_PHASE:
-				VersionValue vval = KVStoreInMemory.ATO.getVersionValue(key);
+				VersionValue vval = KVStoreInMemory.MATO.getVersionValue(key);
 				IPMessage read_phase_ack_rmsg = new RegisterMessage(MessageTypeEnum.READ_PHASE_ACK, own_ip, cnt, key, vval);
-				MessagingService.ATO.sendOneWay(from_ip, read_phase_ack_rmsg);
+				MessagingService.MATO.sendOneWay(from_ip, read_phase_ack_rmsg);
 				break;
 
 				*//**
@@ -69,11 +69,11 @@ public enum AtomicityRegisterServer implements IAtomicityMessageHandler
 				 * the key-value store maintained by the server replica
 				 *//*
 			case WRITE_PHASE:
-				VersionValue vval_now = KVStoreInMemory.ATO.getVersionValue(key);
+				VersionValue vval_now = KVStoreInMemory.MATO.getVersionValue(key);
 				VersionValue vval_max = VersionValue.max(rmsg.getVersionValue(), vval_now);
-				KVStoreInMemory.ATO.put(key, vval_max);
+				KVStoreInMemory.MATO.put(key, vval_max);
 				IPMessage write_phase_ack_rmsg = new RegisterMessage(MessageTypeEnum.WRITE_PHASE_ACK, own_ip, cnt, null, null);
-				MessagingService.ATO.sendOneWay(from_ip, write_phase_ack_rmsg);
+				MessagingService.MATO.sendOneWay(from_ip, write_phase_ack_rmsg);
 				break;
 
 			default:
@@ -106,7 +106,7 @@ public enum AtomicityRegisterServer implements IAtomicityMessageHandler
 			// TODO: refactor KVStore
 			VersionValue vval = KVStoreInMemory.INSTANCE.getVersionValue(key);
 			IPMessage atomicity_read_phase_ack_msg = new AtomicityReadPhaseAckMessage(my_ip, cnt, key, vval);
-			MessagingService.ATO.sendOneWay(from_ip, atomicity_read_phase_ack_msg);
+			MessagingService.MATO.sendOneWay(from_ip, atomicity_read_phase_ack_msg);
 		}
 		else // (atomicityMessage instanceof AtomicityWritePhaseMessage)
 		{
@@ -114,7 +114,7 @@ public enum AtomicityRegisterServer implements IAtomicityMessageHandler
 			VersionValue vval_max = VersionValue.max(atomicityMessage.getVersionValue(), vval_now);
 			KVStoreInMemory.INSTANCE.put(key, vval_max);
 			IPMessage atomicity_write_phase_ack_rmsg = new AtomicityWritePhaseAckMessage(my_ip, cnt);
-			MessagingService.ATO.sendOneWay(from_ip, atomicity_write_phase_ack_rmsg);
+			MessagingService.MATO.sendOneWay(from_ip, atomicity_write_phase_ack_rmsg);
 		}
 			
 	}

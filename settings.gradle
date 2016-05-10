@@ -1,2 +1,2 @@
-include ':app', ':ato', ':javaclasses', ':weakconsistency', ':consistencyinfrastructure'
+include ':app', ':ato', ':hostutilities', ':weakconsistency', ':consistencyinfrastructure', ':causalconsistency'
 

@@ -227,18 +227,8 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
 
                                             if (!new SessionManagerWrapper().isSessionAlive(ownerAddress.getHostAddress(), deviceAddress, 100, 101)) {
                                                 GroupConfig.INSTANCE.clearReplicas();
-                                                GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress.getHostAddress()));
+                                                GroupConfig.INSTANCE.addSelf(new SystemNode(100, "server", ownerAddress.getHostAddress()));
                                                 GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
-                                                // work around ATO code
-                                                new SessionManagerWrapper()
-                                                        .setNodeID(100)
-                                                        .setNodeName("server")
-                                                        .setNodeIp(ownerAddress.getHostAddress())
-                                                        .setNodeAlgType(AtomicityRegisterClientFactory.MWMR_ATOMICITY)
-                                                        .setOtherID(Arrays.asList(101))
-                                                        .setOtherIp(deviceAddress);
-
-
                                             }
                                         } catch (IOException e) {
                                             e.printStackTrace();

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.njucs.ballgame"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -34,7 +34,8 @@ dependencies {
     //compile files('C:/Users/Mio/AndroidStudioProjects/BallGame/libs/gson-1.1.jar')
     //compile files('C:/Users/Mio/AndroidStudioProjects/BallGame/libs/httpclient-4.0.jar')
     compile project(":ato")
-    compile project(":javaclasses")
+    compile project(':hostutilities')
     compile project(":weakconsistency")
     compile project(":consistencyinfrastructure")
+    compile project(":causalconsistency")
 }

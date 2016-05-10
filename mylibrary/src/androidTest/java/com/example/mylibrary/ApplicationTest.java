@@ -1,4 +1,4 @@
-package com.example.mylibrary;
+package com.causalconsistency.mylibrary;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

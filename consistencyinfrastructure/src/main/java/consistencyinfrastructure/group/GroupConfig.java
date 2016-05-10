@@ -7,6 +7,7 @@
 package consistencyinfrastructure.group;
 
 import consistencyinfrastructure.group.member.SystemNode;
+import consistencyinfrastructure.login.SessionManagerWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,36 @@ public enum GroupConfig
 	public void addReplica(SystemNode replica)
 	{
 		this.replica_list.add(replica);
+		this.replica_list.sort(null);
+		new SessionManagerWrapper().addOtherIp(replica.getNodeIp())
+				.addOtherID(replica.getNodeId())
+				.addOtherName(replica.getNodeName());
 	}
+
+	/**
+	 * added by hms; distinguish others' replica from itself
+	 */
+	public void addSelf(SystemNode self)
+	{
+		this.replica_list.add(self);
+		this.replica_list.sort(null);
+		new SessionManagerWrapper().setNodeIp(self.getNodeIp())
+				.setNodeID(self.getNodeId())
+				.setNodeName(self.getNodeName());
+	}
+
+	/**
+	 * add by hms; get self index
+	 */
+	public int getSelfIndex()
+	{
+		for (int i = 0; i < replica_list.size(); i++)
+			if (replica_list.get(i).getNodeId() == SessionManagerWrapper.NODEID)
+				return i;
+
+		return -1;	// never reached
+	}
+
 
 	public void clearReplicas()
 	{

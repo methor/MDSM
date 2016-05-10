@@ -1,6 +1,7 @@
 package consistencyinfrastructure.login;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,8 +14,9 @@ public class SessionManagerWrapper extends SessionManager {
     public static int NODEID;
     public static String NODENAME;
     public static int NODEALGTYPE;
-    public static List<Integer> OTHERID;
-    public static String OTHERIP;
+    public static List<Integer> OTHERID = new ArrayList<>();
+    public static List<String> OTHERIP = new ArrayList<>();
+    public static List<String> OTHERNAME = new ArrayList<>();
 
     public SessionManagerWrapper()
     {
@@ -64,9 +66,27 @@ public class SessionManagerWrapper extends SessionManager {
         return this;
     }
 
-    public SessionManagerWrapper setOtherIp(String ip)
+    public SessionManagerWrapper setOtherIp(List<String> ip)
     {
         OTHERIP = ip;
+        return this;
+    }
+
+    public SessionManagerWrapper addOtherIp(String ip)
+    {
+        OTHERIP.add(ip);
+        return this;
+    }
+
+    public SessionManagerWrapper addOtherID(int id)
+    {
+        OTHERID.add(id);
+        return this;
+    }
+
+    public SessionManagerWrapper addOtherName(String name)
+    {
+        OTHERNAME.add(name);
         return this;
     }
 

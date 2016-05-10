@@ -5,8 +5,9 @@
       <module fileurl="file://$PROJECT_DIR$/BallGame.iml" filepath="$PROJECT_DIR$/BallGame.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/ato/ato.iml" filepath="$PROJECT_DIR$/ato/ato.iml" />
+      <module fileurl="file://$PROJECT_DIR$/causalconsistency/causalconsistency.iml" filepath="$PROJECT_DIR$/causalconsistency/causalconsistency.iml" />
       <module fileurl="file://$PROJECT_DIR$/consistencyinfrastructure/consistencyinfrastructure.iml" filepath="$PROJECT_DIR$/consistencyinfrastructure/consistencyinfrastructure.iml" />
-      <module fileurl="file://$PROJECT_DIR$/javaclasses/javaclasses.iml" filepath="$PROJECT_DIR$/javaclasses/javaclasses.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hostutilities/hostutilities.iml" filepath="$PROJECT_DIR$/hostutilities/hostutilities.iml" />
       <module fileurl="file://$PROJECT_DIR$/weakconsistency/weakconsistency.iml" filepath="$PROJECT_DIR$/weakconsistency/weakconsistency.iml" />
     </modules>
   </component>

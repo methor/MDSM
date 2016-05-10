@@ -1,4 +1,4 @@
-package com.example.mylibrary;
+package com.causalconsistency.mylibrary;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

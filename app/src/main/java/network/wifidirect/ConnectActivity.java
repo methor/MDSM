@@ -320,15 +320,8 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                                 GroupConfig.INSTANCE.clearReplicas();
 
                                 GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress));
-                                GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", myIp));
+                                GroupConfig.INSTANCE.addSelf(new SystemNode(101, "client", myIp));
 
-                                // work around ATO code
-                                new SessionManagerWrapper().setNodeIp(myIp)
-                                        .setNodeID(101)
-                                        .setNodeName("client")
-                                        .setNodeAlgType(AtomicityRegisterClientFactory.MWMR_ATOMICITY)
-                                        .setOtherID(Arrays.asList(100))
-                                        .setOtherIp(ownerAddress);
                             }
                         } finally {
                             socket.close();
