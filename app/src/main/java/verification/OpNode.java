@@ -68,7 +68,7 @@ class OpNode {
     public String toString() {
         return "OpNode{" +
                 "op=" + op +
-                "device=" + device +
+                ",device=" + device +
                 ", variable='" + variable + '\'' +
                 ", value='" + value + '\'' +
                 ", dictatedWrite=" + dictatedWrite +
