@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
     private AccelarateSensor mAccelarateSensor;
     private SensorManager mSensorManager;
     private AbstractDsm dsm;
-    private SensorEmulator sensorEmulator = null;
+    public SensorEmulator sensorEmulator = null;
 
     public String orientation;
 
@@ -127,6 +127,12 @@ public class MainActivity extends Activity {
             orientation = GameModel.ORIENTATION_SOUTH;
 
 
+        if (DEBUG == false) {
+            mAccelarateSensor = new AccelarateSensor(model);
+            mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        } else
+            sensorEmulator = new SensorEmulator(model);
+
         model = new GameModel(id1, id2, dsm, this);
         model.setName("ModelMessageLooper");
         model.start();
@@ -136,11 +142,6 @@ public class MainActivity extends Activity {
         //P2PNetwork.RESERVED_VALUE.setDSM(dsm);
 
 
-        if (DEBUG == false) {
-            mAccelarateSensor = new AccelarateSensor(model);
-            mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        } else
-            sensorEmulator = new SensorEmulator(model);
 
 
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

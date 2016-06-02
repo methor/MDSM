@@ -2,14 +2,24 @@ package nju.cs.extractdata;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.math3.analysis.interpolation.*;
+import org.jfree.chart.*;
 
 /**
  * Created by Mio on 2016/3/21.
@@ -18,6 +28,19 @@ public class ExtractGameState {
 
     public static void main(String[] args)
     {
+
+        File rootDir = new File("log/");
+        ArrayList<File> deviceDirs = new ArrayList<>();
+        for (File dir : rootDir.listFiles())
+            deviceDirs.add(dir);
+        ArrayList<File> allFiles = new ArrayList<>();
+        for (File dir : deviceDirs)
+            allFiles.addAll(Arrays.asList(dir.listFiles()));
+
+        // UserLatency
+        ArrayList<File> latestSpecifiedFiles = getLatestForPattern(allFiles, "UserLatency.*", deviceDirs.size());
+
+
 
         if (args.length < 2)
             throw new IllegalArgumentException();
@@ -120,4 +143,91 @@ public class ExtractGameState {
         );
 
     }*/
+
+    public static ArrayList<File> getLatestForPattern(ArrayList<File> allFiles, String regex, int size)
+    {
+        Pattern pattern = Pattern.compile(regex);
+        ArrayList<File> filteredFiles = new ArrayList<>();
+        for (File file : allFiles)
+        {
+            Matcher matcher = pattern.matcher(file.getName());
+            if (matcher.matches())
+                filteredFiles.add(file);
+        }
+        filteredFiles.sort(new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+        ArrayList<File> result = new ArrayList<>();
+        for (int i = 0; i < size; i++)
+            result.add(filteredFiles.get(filteredFiles.size() - 1 - i));
+        return result;
+
+    }
+
+    public static double averageForAllFilesNumbers(ArrayList<File> allSpecifiedFiles)
+    {
+        int lineNum = 0;
+        double sum = 0;
+        for (File file : allSpecifiedFiles)
+        {
+            BufferedReader bufferedReader = null;
+            try {
+                bufferedReader = new BufferedReader(new FileReader(file));
+                String s = null;
+                while ((s = bufferedReader.readLine()) != null)
+                {
+                    sum += Double.valueOf(s);
+                    lineNum++;
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sum / lineNum;
+    }
+
+    public double[] measureDivergence(ArrayList<File> snapShotFiles)
+    {
+        int lineNum = 0;
+        double sum = 0;
+        ArrayList<ArrayList<SnapShot> > listofSnapShotList = new ArrayList<>();
+        for (File file : snapShotFiles)
+        {
+            listofSnapShotList.add(new ArrayList<SnapShot>());
+            ArrayList<SnapShot> snapShotList = listofSnapShotList.get(listofSnapShotList.size() - 1);
+            BufferedReader bufferedReader = null;
+            try {
+                bufferedReader = new BufferedReader(new FileReader(file));
+                String s = null;
+                while ((s = bufferedReader.readLine()) != null)
+                {
+                    SnapShot snapShot = SnapShot.fromString(s);
+                    snapShotList.add(snapShot);
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
 }

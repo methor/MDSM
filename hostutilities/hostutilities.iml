@@ -27,6 +27,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="commons-math3-3.6.1" level="project" />
+    <orderEntry type="library" exported="" name="jfreechart-1.0.12" level="project" />
+    <orderEntry type="library" exported="" name="jcommon-1.0.15" level="project" />
     <orderEntry type="library" exported="" name="hostutilities.hostutilities" level="project" />
   </component>
 </module>

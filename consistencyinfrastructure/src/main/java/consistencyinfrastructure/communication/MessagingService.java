@@ -244,12 +244,9 @@ public enum MessagingService implements IReceiver {
                         if (!exec.awaitTermination(500, TimeUnit.MILLISECONDS))
                             //TODO
                             System.err.println("thread pool did not terminate");
-
-                        else
-                            for (SocketOut socketOut : clientMap.values())
-                                socketOut.getSocket().close();
-
                     }
+                    for (SocketOut socketOut : clientMap.values())
+                        socketOut.getSocket().close();
                 } catch (InterruptedException e)
                 {
                     exec.shutdownNow();

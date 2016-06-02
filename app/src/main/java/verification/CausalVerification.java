@@ -14,12 +14,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import nju.cs.ADBExecutor;
+
 /**
  * Created by mio on 5/5/16.
  */
 public class CausalVerification {
 
     public static void main(String[] args) {
+        ADBExecutor adbExecutor = new ADBExecutor("adb");
+        adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
+                "log");
         List<File> logDirs = new ArrayList<>();
         List<File> latestFiles = new ArrayList<>();
 

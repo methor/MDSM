@@ -63,6 +63,9 @@ public class GameModel extends Thread {
 
     public long handledNumber = 0;
 
+    private long pcTime;
+    private long localTime;
+
     public GameModel(int id1, int id2, AbstractDsm dsm,
                      Activity activity) {
 
@@ -78,14 +81,18 @@ public class GameModel extends Thread {
         String feedback = (((MainActivity) activity).feedbackEnabled ?
                 "_" + "Feedback" : "");
 
+        String sensorFreq = "";
+        if (MainActivity.DEBUG)
+            sensorFreq = "_" + 1000000 / ((MainActivity) activity).sensorEmulator.getSampleIntervalMicro();
+
         logDeviation = new LogParamsToFile(activity.getApplication(), tag + feedback + "_" +
-                ft.format(date) + ".dat");
+                ft.format(date) + sensorFreq + ".dat");
         logUserLatency = new LogParamsToFile(activity.getApplication(), "UserLatency" + "_" + tag + feedback + "_" +
-                ft.format(date) + ".dat");
+                ft.format(date) + sensorFreq + ".dat");
         logNetworkLatency = new LogParamsToFile(activity.getApplication(), "NetworkLatency" + "_" +
-                tag + feedback + "_" + ft.format(date) + ".dat");
+                tag + feedback + "_" + ft.format(date) + sensorFreq + ".dat");
         logTaggedValue = new LogParamsToFile(activity.getApplication(), "TaggedValue" + "_" +
-                tag + ft.format(date) + ".dat");
+                tag + ft.format(date) + sensorFreq + ".dat");
     }
 
     public List<Ball> getBallList() {
@@ -233,11 +240,19 @@ public class GameModel extends Thread {
         if (MainActivity.DEBUG) {
 
             try {
-                long logPre = System.currentTimeMillis();
-                long time = TimePolling.INSTANCE.pollingTime();
-                long logPost = System.currentTimeMillis();
-                Log.d(TAG, "Polling elapse: " + String.valueOf(logPost - logPre));
-                snapShot.time = time;
+                if (handledNumber == 0) {
+                    long logPre = System.currentTimeMillis();
+                    long time = TimePolling.INSTANCE.pollingTime();
+                    long logPost = System.currentTimeMillis();
+                    pcTime = time - (logPost - logPre) / 2;
+                    localTime  = logPost;
+                }
+                else {
+                    long newLocalTime = System.currentTimeMillis();
+                    pcTime += newLocalTime - localTime;
+                    localTime = newLocalTime;
+                }
+                snapShot.time = pcTime;
                 logDeviation.write(snapShot.toString());
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
@@ -280,6 +295,15 @@ public class GameModel extends Thread {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+        while (handler.getLooper().getThread().isAlive())
+        {
+            try {
+                sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.d(TAG, "Game looper quit completely");
         logDeviation.close();
         logUserLatency.close();
         logNetworkLatency.close();

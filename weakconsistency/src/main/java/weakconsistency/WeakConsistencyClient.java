@@ -20,6 +20,7 @@ public enum WeakConsistencyClient implements IRegisterClient<Serializable, Key, 
 
     public Serializable put(Key key, Serializable val)
     {
+        KVStoreInMemory.INSTANCE.put(key, val);
         String ip = SessionManagerWrapper.NODEIP;
         WeakConsistencyMessage weakConsistencyMessage = new WeakConsistencyMessage(ip, cnt, key, val);
         for (String ipo : SessionManagerWrapper.OTHERIP)
