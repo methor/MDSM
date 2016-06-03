@@ -39,78 +39,86 @@ public class ExtractGameState {
             allFiles.addAll(Arrays.asList(dir.listFiles()));
 
         // UserLatency
-        ArrayList<File> latestSpecifiedFiles = getLatestForPattern(allFiles, "UserLatency.*", deviceDirs.size());
+        ArrayList<File> latestSpecifiedFiles = getLatestForPattern(allFiles, "dsm.*", deviceDirs.size());
+
+        for (int i = 0; i < latestSpecifiedFiles.size(); i++)
+            System.out.println(latestSpecifiedFiles.get(i).toString() + " ");
+
+        double[] divergence = measureDivergence(latestSpecifiedFiles);
+
+        for (int i = 0; i < divergence.length; i++)
+            System.out.println(divergence[i] + " ");
 
 
 
-        if (args.length < 2)
-            throw new IllegalArgumentException();
-        List<File> logDirs = new ArrayList<File>();
-        for (String arg : args)
-        {
-            logDirs.add(new File("log/" + arg));
-        }
-        for (int i = 0; i < logDirs.size(); i++) {
-            File[] logFiles = logDirs.get(i).listFiles();
-            File dumpPath = new File("/home/mio/matlab/ballgame/" + args[i]);
-            if (!dumpPath.exists()) {
-                dumpPath.mkdir();
-            }
-
-
-            for (int j = 0; j < logFiles.length; j++) {
-                File logFile = logFiles[j];
-
-                if (new File(dumpPath.getPath(), logFile.getName()).exists())
-                    continue;
-
-                if (logFile.getName().startsWith("NetworkLatency") ||
-                        logFile.getName().startsWith("UserLatency")) {
-                    Path sPath = FileSystems.getDefault().getPath(logFile.getPath());
-                    Path dPath = FileSystems.getDefault().getPath(dumpPath.getPath(), logFile.getName());
-                    try {
-                        Files.copy(sPath, dPath);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    try (
-                            BufferedReader bufferedReader = new BufferedReader(new FileReader(logFile));
-                            PrintWriter printWriter = new PrintWriter(dumpPath + "/" + logFile.getName(), "utf-8");
-
-                    ) {
-                        String s1 = null;
-                        while ((s1 = bufferedReader.readLine()) != null) {
-                            SnapShot snapShot1 = null;
-                            try {
-                                snapShot1 = SnapShot.fromString(s1);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                System.err.println(logFile.getPath());
-                                System.err.println(s1);
-                            }
-
-                            printWriter.print(snapShot1.time + ",");
-                            for (int k = 0; k < snapShot1.ballList.size(); k++) {
-                                Ball ball = snapShot1.ballList.get(k);
-                                printWriter.print(ball.getX() + ",");
-                                printWriter.print(ball.getY() + ",");
-                                printWriter.print(ball.getSpeedX() + ",");
-                                printWriter.print(ball.getSpeedY() + ",");
-                                printWriter.print(ball.getAccelarationX() + ",");
-                                printWriter.print(ball.getAccelarationY());
-                                printWriter.print((k != (snapShot1.ballList.size() - 1) ?
-                                        "," : '\n'));
-                            }
-
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+//        if (args.length < 2)
+//            throw new IllegalArgumentException();
+//        List<File> logDirs = new ArrayList<File>();
+//        for (String arg : args)
+//        {
+//            logDirs.add(new File("log/" + arg));
+//        }
+//        for (int i = 0; i < logDirs.size(); i++) {
+//            File[] logFiles = logDirs.get(i).listFiles();
+//            File dumpPath = new File("/home/mio/matlab/ballgame/" + args[i]);
+//            if (!dumpPath.exists()) {
+//                dumpPath.mkdir();
+//            }
+//
+//
+//            for (int j = 0; j < logFiles.length; j++) {
+//                File logFile = logFiles[j];
+//
+//                if (new File(dumpPath.getPath(), logFile.getName()).exists())
+//                    continue;
+//
+//                if (logFile.getName().startsWith("NetworkLatency") ||
+//                        logFile.getName().startsWith("UserLatency")) {
+//                    Path sPath = FileSystems.getDefault().getPath(logFile.getPath());
+//                    Path dPath = FileSystems.getDefault().getPath(dumpPath.getPath(), logFile.getName());
+//                    try {
+//                        Files.copy(sPath, dPath);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                } else {
+//                    try (
+//                            BufferedReader bufferedReader = new BufferedReader(new FileReader(logFile));
+//                            PrintWriter printWriter = new PrintWriter(dumpPath + "/" + logFile.getName(), "utf-8");
+//
+//                    ) {
+//                        String s1 = null;
+//                        while ((s1 = bufferedReader.readLine()) != null) {
+//                            SnapShot snapShot1 = null;
+//                            try {
+//                                snapShot1 = SnapShot.fromString(s1);
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                                System.err.println(logFile.getPath());
+//                                System.err.println(s1);
+//                            }
+//
+//                            printWriter.print(snapShot1.time + ",");
+//                            for (int k = 0; k < snapShot1.ballList.size(); k++) {
+//                                Ball ball = snapShot1.ballList.get(k);
+//                                printWriter.print(ball.getX() + ",");
+//                                printWriter.print(ball.getY() + ",");
+//                                printWriter.print(ball.getSpeedX() + ",");
+//                                printWriter.print(ball.getSpeedY() + ",");
+//                                printWriter.print(ball.getAccelarationX() + ",");
+//                                printWriter.print(ball.getAccelarationY());
+//                                printWriter.print((k != (snapShot1.ballList.size() - 1) ?
+//                                        "," : '\n'));
+//                            }
+//
+//                        }
+//
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
 
 
 
@@ -199,7 +207,7 @@ public class ExtractGameState {
         return sum / lineNum;
     }
 
-    public double[] measureDivergence(ArrayList<File> snapShotFiles)
+    public static double[] measureDivergence(ArrayList<File> snapShotFiles)
     {
         int lineNum = 0;
         double sum = 0;
@@ -323,16 +331,26 @@ public class ExtractGameState {
                                 + Math.pow(interpolationValuesI[k*6+3][m] - interpolationValuesJ[k*6+3][m], 2d)
                         );
                         divergence[2] += factor * Math.sqrt(
-                                Math.pow(interpolationValuesI[k*6+4][m] - interpolationValuesJ[k*6+][m], 2d)
+                                Math.pow(interpolationValuesI[k*6+4][m] - interpolationValuesJ[k*6+4][m], 2d)
                                         + Math.pow(interpolationValuesI[k*6+5][m] - interpolationValuesJ[k*6+5][m], 2d)
                         );
                     }
                 }
             }
         }
-        // take average for divergence
+        // take average for divergences
         for (int i = 0; i < divergence.length; i++)
-            divergence[i] /= ((listofSnapShotList.size() + 1) * listofSnapShotList.size() / 2);
+            divergence[i] /= (interpolationPointNumber * (listofSnapShotList.size() + 1) *
+                    (listofSnapShotList.size() + 1) * listofSnapShotList.size() / 2);
+
+        // normalize divergences
+        divergence[0] /= Math.sqrt(2);
+        divergence[1] /= Math.sqrt(Math.pow(2*Constant.MAX_SPEED_HORIZONTAL_NORM, 2d)
+        + Math.pow(2*Constant.MAX_SPEED_VERTICAL_NORM, 2d));
+        divergence[2] /= Math.sqrt(Math.pow(2*Constant.MAX_ACC_HORIZONTAL_NORM, 2d)
+        + Math.pow(2*Constant.MAX_ACC_VERTICAL_NORM, 2d));
+
+        return divergence;
 
     }
 }

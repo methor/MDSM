@@ -1,4 +1,4 @@
-package constant;
+package nju.cs.extractdata;
 
 /**
  * Created by CS on 2015/9/19.
