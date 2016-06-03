@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.analysis.interpolation.*;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.jfree.chart.*;
 
 /**
@@ -228,6 +229,110 @@ public class ExtractGameState {
                 }
             }
         }
+
+        ArrayList<SnapShot> firstSnapshots = new ArrayList<>();
+        for (ArrayList<SnapShot> snapShotList : listofSnapShotList)
+            firstSnapshots.add(snapShotList.get(0));
+        firstSnapshots.sort(new Comparator<SnapShot>() {
+            @Override
+            public int compare(SnapShot o1, SnapShot o2) {
+                return Long.valueOf(o2.time).compareTo(Long.valueOf(o1.time));  //reversed order
+            }
+        });
+        long startTime = firstSnapshots.get(0).time;
+
+        ArrayList<SnapShot> lastSnapshots = new ArrayList<>();
+        for (ArrayList<SnapShot> snapShotList : listofSnapShotList)
+            lastSnapshots.add(snapShotList.get(snapShotList.size() - 1));
+        lastSnapshots.sort(new Comparator<SnapShot>() {
+            @Override
+            public int compare(SnapShot o1, SnapShot o2) {
+                return Long.valueOf(o1.time).compareTo(Long.valueOf(o2.time));  //natural order
+            }
+        });
+        long endTime = lastSnapshots.get(0).time;
+
+        int interpolationPointNumber = listofSnapShotList.get(0).size();
+        double[] interpolationArgument = new double[interpolationPointNumber];
+        int snapShotParametersNumber = 6 * (listofSnapShotList.size() + 1);
+
+        for (int i = 0; i < interpolationArgument.length; i++)
+            interpolationArgument[i] = startTime + (double)i / interpolationPointNumber * (endTime - startTime);
+        ArrayList<Double[][]> ballsStatesList = new ArrayList<>();
+        for (int i = 0; i < listofSnapShotList.size(); i++) {
+            ballsStatesList.add(new Double[1 + snapShotParametersNumber][listofSnapShotList.get(i).size()]);
+            Double[][] ballsStates = ballsStatesList.get(ballsStatesList.size() - 1);
+            ArrayList<SnapShot> snapShotList = listofSnapShotList.get(i);
+            for (int j = 0; j < snapShotList.size(); j++) {
+                SnapShot snapShot = snapShotList.get(j);
+                ballsStates[0][j] = (double)snapShot.time;
+                for (int k = 0; k < snapShot.ballList.size(); k++) {
+                    Ball ball = snapShot.ballList.get(k);
+                    ballsStates[k * 6 + 1][j] = (double) ball.getX();
+                    ballsStates[k * 6 + 2][j] = (double) ball.getY();
+                    ballsStates[k * 6 + 3][j] = (double) ball.getSpeedX();
+                    ballsStates[k * 6 + 4][j] = (double) ball.getSpeedY();
+                    ballsStates[k * 6 + 5][j] = (double) ball.getAccelarationX();
+                    ballsStates[(k + 1) * 6][j] = (double) ball.getAccelarationY();
+                }
+            }
+        }
+
+        ArrayList<Double[][]> interpolationValuesList = new ArrayList<>();
+        for (int i = 0; i < listofSnapShotList.size(); i++) {
+            interpolationValuesList.add(new Double[snapShotParametersNumber][interpolationPointNumber]);
+            Double[][] ballsStates = ballsStatesList.get(i);
+            Double[][] interpolationValues = interpolationValuesList.get(interpolationValuesList.size() - 1);
+            for (int j = 0; j < snapShotParametersNumber; j++) {
+                SplineInterpolator splineInterpolator = new SplineInterpolator();
+                PolynomialSplineFunction polynomialSplineFunction =
+                        splineInterpolator.interpolate(Util.doubleToPrimitives(ballsStates[0]),
+                                Util.doubleToPrimitives(ballsStates[j + 1]));
+                for (int k = 0; k < interpolationPointNumber; k++)
+                    interpolationValues[j][k] = polynomialSplineFunction.value(interpolationArgument[k]);
+            }
+        }
+
+        double[] divergence = new double[3];
+        for (int i = 0; i < divergence.length; i++)
+            divergence[i] = 0;
+
+        // for every pair of devices i and j
+        for (int i = 0; i < listofSnapShotList.size(); i++)
+        {
+            for (int j = i + 1; j < listofSnapShotList.size(); j++)
+            {
+                Double[][] interpolationValuesI = interpolationValuesList.get(i);
+                Double[][] interpolationValuesJ = interpolationValuesList.get(j);
+                // for every ball k
+                for (int k = 0; k < listofSnapShotList.size() + 1; k++)
+                {
+                   // for every interpolation  point
+                    for (int m = 0; m < interpolationPointNumber; m++)
+                    {
+                        int factor = 1;
+                        // double penalty for goal ball
+                        if (k == listofSnapShotList.size())
+                            factor = 2;
+                        divergence[0] += factor * Math.sqrt(
+                                Math.pow(interpolationValuesI[k * 6][m] - interpolationValuesJ[k * 6][m], 2d)
+                                + Math.pow(interpolationValuesI[k * 6 + 1][m] - interpolationValuesJ[k * 6 + 1][m], 2d)
+                        );
+                        divergence[1] += factor * Math.sqrt(
+                                Math.pow(interpolationValuesI[k*6+2][m] - interpolationValuesJ[k*6+2][m], 2d)
+                                + Math.pow(interpolationValuesI[k*6+3][m] - interpolationValuesJ[k*6+3][m], 2d)
+                        );
+                        divergence[2] += factor * Math.sqrt(
+                                Math.pow(interpolationValuesI[k*6+4][m] - interpolationValuesJ[k*6+][m], 2d)
+                                        + Math.pow(interpolationValuesI[k*6+5][m] - interpolationValuesJ[k*6+5][m], 2d)
+                        );
+                    }
+                }
+            }
+        }
+        // take average for divergence
+        for (int i = 0; i < divergence.length; i++)
+            divergence[i] /= ((listofSnapShotList.size() + 1) * listofSnapShotList.size() / 2);
 
     }
 }

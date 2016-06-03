@@ -9,6 +9,13 @@ public class Util {
         return b ? 1 : 0;
     }
 
+    public static double[] doubleToPrimitives(Double[] doubles)
+    {
+        double[] rt = new double[doubles.length];
+        for (int i = 0; i < doubles.length; i++)
+            rt[i] = doubles[i];
+        return rt;
+    }
 
     public static int findCharPair(String s, int start)
     {
