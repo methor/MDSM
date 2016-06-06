@@ -39,7 +39,7 @@ public class SWMR2AtomicityRegisterClient extends
 	 * Here, we put "Synchronized" on method level because there are no much concurrent accesses.
 	 * See <a href = "http://en.wikipedia.org/wiki/Singleton_pattern">Singleton Pattern [wiki]</a> 
 	 */
-	private SWMR2AtomicityRegisterClient() { }
+	public SWMR2AtomicityRegisterClient() { }
 	
 	private static SWMR2AtomicityRegisterClient instance = null;
 	

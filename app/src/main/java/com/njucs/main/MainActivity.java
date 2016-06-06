@@ -1,6 +1,7 @@
 package com.njucs.main;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import consistencyinfrastructure.login.SessionManagerWrapper;
 import constant.Constant;
 import dsm.AbstractDsm;
+import dsm.CausalDsm;
 import dsm.MWMRAtomicDsm;
 import dsm.WeakDsm;
 import model.Field;
@@ -62,10 +64,15 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         feedbackThread.interrupt();
+        Log.d(TAG, "feedbackThread interrupt");
         unregisterDataSource();
+        Log.d(TAG, "unregisterDataSource");
         model.onDestroy();
+        Log.d(TAG, "model onDestroy");
         dsm.onDestroy();
+        Log.d(TAG, "dsm onDestroy");
         ValueTagging.reset();
+        Log.d(TAG, "ValueTagging reset");
 
 
     }
@@ -115,6 +122,8 @@ public class MainActivity extends Activity {
             dsm = MWMRAtomicDsm.INSTANCE();
         else if (consistency.equals(getString(R.string.weak_consistency)))
             dsm = WeakDsm.INSTANCE();
+        else if (consistency.equals(getString(R.string.causal_consistency)))
+            dsm = CausalDsm.INSTANCE();
 
 
         //String orientation1 = extras.getString("orientation1");

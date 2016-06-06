@@ -1,6 +1,8 @@
 package ics.mobilememo.sharedmemory.atomicity;
 
 
+import ics.mobilememo.sharedmemory.data.kvs.kvstore.KVStoreInMemory;
+
 /**
  * @author hengxin
  * @date Jun 27, 2014
@@ -28,13 +30,16 @@ public enum AtomicityRegisterClientFactory
 		switch (alg_type)
 		{
 			case AtomicityRegisterClientFactory.SWMR_ATOMICITY:
-				this.atomicity_register_client = SWMRAtomicityRegisterClient.INSTANCE();
+				this.atomicity_register_client = new SWMRAtomicityRegisterClient();
+				KVStoreInMemory.INSTANCE.clean();
 				break;
 			case AtomicityRegisterClientFactory.SWMR_2ATOMICITY:
-				this.atomicity_register_client = SWMR2AtomicityRegisterClient.INSTANCE();
+				this.atomicity_register_client = new SWMR2AtomicityRegisterClient();
+				KVStoreInMemory.INSTANCE.clean();
 				break;
 			case AtomicityRegisterClientFactory.MWMR_ATOMICITY:
-				this.atomicity_register_client = MWMRAtomicityRegisterClient.INSTANCE();
+				this.atomicity_register_client = new MWMRAtomicityRegisterClient();
+				KVStoreInMemory.INSTANCE.clean();
 				break;
 			default:
 				throw new NoSuchAtomicAlgorithmSupported("No such atomicity algorithm " + alg_type);

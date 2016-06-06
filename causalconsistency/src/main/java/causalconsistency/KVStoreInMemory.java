@@ -65,7 +65,6 @@ public enum KVStoreInMemory implements IKVStore<Serializable, Key>
 		 */
 
 		key_val_map.put(key, val);
-		vectorTimestamp.selfIncreament();
 
 
 

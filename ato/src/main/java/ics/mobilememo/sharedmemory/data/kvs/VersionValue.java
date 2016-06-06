@@ -112,6 +112,9 @@ public class VersionValue implements Comparable<VersionValue>, Serializable
 	 */
 	public static VersionValue max(VersionValue[] vvals)
 	{
+		if (vvals.length == 0)
+			return RESERVED_VERSIONVALUE;
+
 		VersionValue max_vval = vvals[0];
 
 		for (int i = 1; i < vvals.length; i++)

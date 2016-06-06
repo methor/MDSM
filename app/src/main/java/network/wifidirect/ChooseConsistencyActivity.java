@@ -2,6 +2,7 @@ package network.wifidirect;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -42,6 +43,10 @@ public class ChooseConsistencyActivity extends Activity {
 
                 }
                 break;
+            case R.id.radio_causal:
+                if (checked) {
+                    consistency = getResources().getString(R.string.causal_consistency);
+                }
         }
         Intent returnIntent = new Intent();
         returnIntent.putExtra(getResources().getString(R.string.consistency), consistency);

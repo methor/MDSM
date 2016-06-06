@@ -16,8 +16,8 @@ import consistencyinfrastructure.login.SessionManagerWrapper;
 public enum  MessagingQueues {
 
     INSTANCE;
-    private ConcurrentLinkedDeque<CausalConsistencyMessage> inQueue = new ConcurrentLinkedDeque<>();
-    private ConcurrentLinkedDeque<CausalConsistencyMessage> outQueue = new ConcurrentLinkedDeque<>();
+    private ConcurrentLinkedDeque<CausalConsistencyMessage> inQueue = null;
+    private ConcurrentLinkedDeque<CausalConsistencyMessage> outQueue = null;
 
 
     public boolean addInQueueTask(CausalConsistencyMessage msg)
@@ -25,17 +25,30 @@ public enum  MessagingQueues {
         return inQueue.add(msg);
     }
 
-    public ConcurrentLinkedDeque<CausalConsistencyMessage> getInQueue() {
+    public synchronized ConcurrentLinkedDeque<CausalConsistencyMessage> getInQueue() {
+        if (inQueue == null)
+            inQueue = new ConcurrentLinkedDeque<>();
         return inQueue;
     }
 
-    public ConcurrentLinkedDeque<CausalConsistencyMessage> getOutQueue() {
+    public synchronized ConcurrentLinkedDeque<CausalConsistencyMessage> getOutQueue() {
+        if (outQueue == null)
+            outQueue = new ConcurrentLinkedDeque<>();
         return outQueue;
     }
 
     public boolean addOutQueueTask(CausalConsistencyMessage msg)
     {
         return outQueue.add(msg);
+    }
+
+    public void clearInQueue()
+    {
+        inQueue = null;
+    }
+    public void clearOutQueue()
+    {
+        outQueue = null;
     }
 
 }

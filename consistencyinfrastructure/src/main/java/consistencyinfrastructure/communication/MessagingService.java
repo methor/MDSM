@@ -36,6 +36,7 @@ public enum MessagingService implements IReceiver {
     private static final String TAG = MessagingService.class.getName();
 
     private static ExecutorService exec = Executors.newCachedThreadPool();
+    private static ExecutorService sendExec = Executors.newCachedThreadPool();
 
     /**
      * server socket on which the server replica is listening to and accept messages
@@ -53,6 +54,7 @@ public enum MessagingService implements IReceiver {
     {
 
         final int port = getServerPort();
+        System.out.println("Send to " + receiver_ip + " " + port);
 //		Log.d(TAG, "Send to " + receiver_ip);
         Runnable runnable = new Runnable() {
             @Override
@@ -105,7 +107,7 @@ public enum MessagingService implements IReceiver {
         {
             try
             {
-                exec.execute(runnable);
+                sendExec.execute(runnable);
             } catch (Exception e)
             {
                 e.printStackTrace();
@@ -203,7 +205,7 @@ public enum MessagingService implements IReceiver {
         else // TODO: other messages
             return;*/
         String s = msg.getClass().getSimpleName();
-//        System.out.println("Message type:" + s);
+        System.out.println("Message type:" + s);
         receiver.onReceive(msg);
 
     }
@@ -215,7 +217,7 @@ public enum MessagingService implements IReceiver {
         else if (this == WEAK)
             return NetworkConfig.NETWORK_PORT + 1;
         else
-            return NetworkConfig.NETWORK_PORT + 100;
+            return NetworkConfig.NETWORK_PORT + 2;
     }
 
     public MessagingService registerReceiver(IReceiver receiver)
@@ -237,22 +239,10 @@ public enum MessagingService implements IReceiver {
                 this.server_socket.close();
 
                 exec.shutdown();
-                try {
-                    if (!exec.awaitTermination(300, TimeUnit.MILLISECONDS))
-                    {
-                        exec.shutdownNow();
-                        if (!exec.awaitTermination(500, TimeUnit.MILLISECONDS))
-                            //TODO
-                            System.err.println("thread pool did not terminate");
-                    }
-                    for (SocketOut socketOut : clientMap.values())
-                        socketOut.getSocket().close();
-                } catch (InterruptedException e)
-                {
-                    exec.shutdownNow();
-                    Thread.currentThread().interrupt();
+                sendExec.shutdown();
 
-                }
+                for (SocketOut socketOut : clientMap.values())
+                    socketOut.getSocket().close();
 
 
 
@@ -267,6 +257,8 @@ public enum MessagingService implements IReceiver {
     {
         if (exec.isShutdown())
             exec = Executors.newCachedThreadPool();
+        if (sendExec.isShutdown())
+            sendExec = Executors.newCachedThreadPool();
     }
 
 

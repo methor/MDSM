@@ -25,6 +25,7 @@ import consistencyinfrastructure.data.kvs.Key;
 import consistencyinfrastructure.group.member.SystemNode;
 import consistencyinfrastructure.login.SessionManagerWrapper;
 import dsm.AbstractDsm;
+import dsm.CausalDsm;
 import dsm.MWMRAtomicDsm;
 import dsm.WeakDsm;
 import ics.mobilememo.sharedmemory.data.kvs.VersionValue;
@@ -169,7 +170,7 @@ public class GameModel extends Thread {
                 ballList = snapShot.ballList;
             }
 
-        } else if (dsm instanceof WeakDsm) {
+        } else if (dsm instanceof WeakDsm || dsm instanceof CausalDsm) {
             snapShot = new SnapShot(this);
             Ball myBall = snapShot.findBall(SessionManagerWrapper.NODEID);
             myBall.setAccelarationX(v);
@@ -295,8 +296,12 @@ public class GameModel extends Thread {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+
+        // looper thread may dead waiting for something, send interrupt to cancel it
+        // place interrupt in while in case the interrupt is handled from inside some called method
         while (handler.getLooper().getThread().isAlive())
         {
+            handler.getLooper().getThread().interrupt();
             try {
                 sleep(20);
             } catch (InterruptedException e) {

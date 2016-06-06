@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
@@ -22,6 +23,8 @@ import org.apache.commons.math3.analysis.interpolation.*;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.jfree.chart.*;
 
+import nju.cs.ADBExecutor;
+
 /**
  * Created by Mio on 2016/3/21.
  */
@@ -29,6 +32,12 @@ public class ExtractGameState {
 
     public static void main(String[] args)
     {
+
+        ADBExecutor adbExecutor = new ADBExecutor("adb");
+        adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
+                "log");
+
+        String dsmType = "MWMRAtomicDsm";
 
         File rootDir = new File("log/");
         ArrayList<File> deviceDirs = new ArrayList<>();
@@ -39,16 +48,41 @@ public class ExtractGameState {
             allFiles.addAll(Arrays.asList(dir.listFiles()));
 
         // UserLatency
-        ArrayList<File> latestSpecifiedFiles = getLatestForPattern(allFiles, "dsm.*", deviceDirs.size());
+        ArrayList<File> latestSpecifiedFiles = getLatestForPattern(allFiles, "UserLatency.*" + dsmType + ".*", deviceDirs.size());
+        System.out.println(Arrays.toString(latestSpecifiedFiles.toArray(new File[0])));
+        try {
+            FileWriter fileWriter = new FileWriter("UserLatency.txt", true);
+            fileWriter.append(latestSpecifiedFiles.get(0).getName() +
+                    " " + averageForAllFilesNumbers(latestSpecifiedFiles) + "\n");
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        for (int i = 0; i < latestSpecifiedFiles.size(); i++)
-            System.out.println(latestSpecifiedFiles.get(i).toString() + " ");
+        // NetworkLatency
+        latestSpecifiedFiles = getLatestForPattern(allFiles, "NetworkLatency.*" + dsmType + ".*", deviceDirs.size());
+        System.out.println(Arrays.toString(latestSpecifiedFiles.toArray(new File[0])));
+        try {
+            FileWriter fileWriter = new FileWriter("NetworkLatency.txt", true);
+            fileWriter.append(latestSpecifiedFiles.get(0).getName() +
+            " " + averageForAllFilesNumbers(latestSpecifiedFiles) + "\n");
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        // divergence
+        latestSpecifiedFiles = getLatestForPattern(allFiles, "dsm.*" + dsmType + ".*", deviceDirs.size());
+        System.out.println(Arrays.toString(latestSpecifiedFiles.toArray(new File[0])));
         double[] divergence = measureDivergence(latestSpecifiedFiles);
-
-        for (int i = 0; i < divergence.length; i++)
-            System.out.println(divergence[i] + " ");
-
+        try {
+            FileWriter fileWriter = new FileWriter("Divergence.txt", true);
+            fileWriter.append(latestSpecifiedFiles.get(0).getName() +
+            " " + divergence[0] + " " + divergence[1] + " " + divergence[2] + "\n");
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
 //        if (args.length < 2)

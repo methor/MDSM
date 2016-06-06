@@ -34,7 +34,7 @@ public class SWMRAtomicityRegisterClient extends
 	 */
 	
 	// "protected" constructor: \link SWMR2AtomicityRegisterClient needs to extend this class.
-	protected SWMRAtomicityRegisterClient() { }
+	public SWMRAtomicityRegisterClient() { }
 	
 	private static SWMRAtomicityRegisterClient instance = null;
 	

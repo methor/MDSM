@@ -5,6 +5,7 @@ import java.io.Serializable;
 
 import causalconsistency.CausalConsistencyClient;
 import causalconsistency.CausalConsistencyMessagingService;
+import causalconsistency.CausalConsistencyServer;
 import causalconsistency.KVStoreInMemory;
 import causalconsistency.ReservedValue;
 import consistencyinfrastructure.communication.MessagingService;
@@ -25,6 +26,7 @@ public class CausalDsm extends AbstractDsm<Serializable, Key, Serializable> {
     private CausalDsm()
     {
         MessagingService.CAUSAL.registerReceiver(CausalConsistencyMessagingService.INSTANCE);
+        CausalConsistencyServer.INSTANCE.init();    // a little messy, I may refactor dsm api structure in the future
         serverTask = MessagingService.CAUSAL.new ServerTask(SessionManager.getNewInstance().getNodeIp());
         serverTask.start();
     }
@@ -56,6 +58,7 @@ public class CausalDsm extends AbstractDsm<Serializable, Key, Serializable> {
     {
         serverTask.onDestroy();
         KVStoreInMemory.INSTANCE.clean();
+        CausalConsistencyServer.INSTANCE.onDestroy();
         instance = null;
     }
 

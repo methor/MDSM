@@ -40,4 +40,14 @@ public class CausalConsistencyMessage extends IPMessage {
     public int getOriginator() {
         return originator;
     }
+
+    @Override
+    public String toString() {
+        return "CausalConsistencyMessage{" +
+                "vt=" + vt +
+                ", key=" + key +
+                ", payload=" + payload +
+                ", originator=" + originator +
+                '}';
+    }
 }

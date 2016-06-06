@@ -12,6 +12,8 @@ import consistencyinfrastructure.login.SessionManagerWrapper;
  */
 public class VectorTimestamp implements Serializable {
 
+    private static final long serialVersionUID = -4014056350794547921L;
+
     public enum Relation {LESS, GREAT, EQUAL, CONCURRENT};
     private ArrayList<Integer> vectorTimestamp = new ArrayList<>();
 
@@ -35,10 +37,11 @@ public class VectorTimestamp implements Serializable {
     }
 
 
-    public void selfIncreament()
+    public VectorTimestamp selfIncreament()
     {
         int index = GroupConfig.INSTANCE.getSelfIndex();
         vectorTimestamp.set(index, vectorTimestamp.get(index) + 1);
+        return this;
     }
 
     public void increament(int index)
@@ -55,6 +58,10 @@ public class VectorTimestamp implements Serializable {
         return Relation.LESS;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "VectorTimestamp{" +
+                "vectorTimestamp=" + vectorTimestamp +
+                '}';
+    }
 }

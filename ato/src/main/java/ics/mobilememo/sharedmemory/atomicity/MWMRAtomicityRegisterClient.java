@@ -27,7 +27,7 @@ public class MWMRAtomicityRegisterClient extends
 	 * Here, we put "Synchronized" on method level because there are no much concurrent accesses.
 	 * See <a href = "http://en.wikipedia.org/wiki/Singleton_pattern">Singleton Pattern [wiki]</a> 
 	 */
-	private MWMRAtomicityRegisterClient() { }
+	public MWMRAtomicityRegisterClient() { }
 	
 	private static MWMRAtomicityRegisterClient instance = null;
 	
