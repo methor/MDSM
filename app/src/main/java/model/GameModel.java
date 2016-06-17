@@ -11,6 +11,8 @@ import android.util.Log;
 
 import com.njucs.main.MainActivity;
 
+import org.apache.log4j.chainsaw.Main;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -31,6 +33,7 @@ import dsm.WeakDsm;
 import ics.mobilememo.sharedmemory.data.kvs.VersionValue;
 import log.LogParamsToFile;
 import log.TimePolling;
+import nju.cs.extractdata.ExtractGameState;
 import nju.cs.timingservice.TimingService;
 import verification.TaggedValue;
 import verification.ValueTagging;
@@ -64,8 +67,10 @@ public class GameModel extends Thread {
 
     public long handledNumber = 0;
 
+
     private long pcTime;
     private long localTime;
+    private long lastProcessTime = 0;
 
     public GameModel(int id1, int id2, AbstractDsm dsm,
                      Activity activity) {
@@ -81,19 +86,21 @@ public class GameModel extends Thread {
         String tag = dsm.getClass().getName();
         String feedback = (((MainActivity) activity).feedbackEnabled ?
                 "_" + "Feedback" : "");
+        String injectedLatencyUpperBound = (dsm.getMessagingService().injectedLatencyUpperBound == 0 ?
+                "" : "_LatencyUpperBound:" + String.valueOf(dsm.getMessagingService().injectedLatencyUpperBound));
 
         String sensorFreq = "";
         if (MainActivity.DEBUG)
             sensorFreq = "_" + 1000000 / ((MainActivity) activity).sensorEmulator.getSampleIntervalMicro();
 
         logDeviation = new LogParamsToFile(activity.getApplication(), tag + feedback + "_" +
-                ft.format(date) + sensorFreq + ".dat");
+                ft.format(date) + sensorFreq + injectedLatencyUpperBound + ".dat");
         logUserLatency = new LogParamsToFile(activity.getApplication(), "UserLatency" + "_" + tag + feedback + "_" +
-                ft.format(date) + sensorFreq + ".dat");
+                ft.format(date) + sensorFreq + injectedLatencyUpperBound + ".dat");
         logNetworkLatency = new LogParamsToFile(activity.getApplication(), "NetworkLatency" + "_" +
-                tag + feedback + "_" + ft.format(date) + sensorFreq + ".dat");
+                tag + feedback + "_" + ft.format(date) + sensorFreq + injectedLatencyUpperBound + ".dat");
         logTaggedValue = new LogParamsToFile(activity.getApplication(), "TaggedValue" + "_" +
-                tag + ft.format(date) + sensorFreq + ".dat");
+                tag + ft.format(date) + sensorFreq + injectedLatencyUpperBound + ".dat");
     }
 
     public List<Ball> getBallList() {
@@ -108,8 +115,19 @@ public class GameModel extends Thread {
 
     public void handleData(float v, float v1, long userActTime, int sampleIntervalMicro) {
         SnapShot snapShot = null;
-        float sampleIntervalSecF = sampleIntervalMicro / 1000000f;
         long processTime, postProcessTime;
+
+        processTime = System.currentTimeMillis();
+        float sampleIntervalSecF = (lastProcessTime == 0 ? 0 : (processTime - lastProcessTime) / 1000f);
+        lastProcessTime = processTime;
+
+        // only handle 10000 sensor events
+        if (handledNumber == 10000)
+        {
+            Log.d(TAG, "Operations number reaches 10000");
+            return;
+        }
+
 
         if (((MainActivity) activity).orientation.equals(ORIENTATION_SOUTH)) {
             v = -v;
@@ -197,7 +215,7 @@ public class GameModel extends Thread {
             if (dsm.getReservedValue().equals(s)) {
                 //
                 logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
-                .OTHERID.get(0)), OTHER_KEY.toString(), 0, s).getTag());
+                .OTHERID.get(0)), OTHER_KEY.toString(), 0, null).getTag());
             } else {
                 logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
                 Ball rival = ((Ball) ValueTagging.tagStripping((TaggedValue)s));
@@ -209,7 +227,7 @@ public class GameModel extends Thread {
             if (dsm.getReservedValue().equals(s)) {
                 //
                 logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
-                .getLeader()), GOAL_KEY.toString(), 0, s).getTag());
+                .getLeader()), GOAL_KEY.toString(), 0, null).getTag());
             } else {
                 logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
                 Ball goal = ((Ball) ValueTagging.tagStripping((TaggedValue)s));
@@ -261,6 +279,7 @@ public class GameModel extends Thread {
         }
 
         handledNumber++;
+        Log.d(TAG, "handledNumber = " + handledNumber);
 
 
     }

@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
@@ -197,7 +198,7 @@ public class ExtractGameState {
             if (matcher.matches())
                 filteredFiles.add(file);
         }
-        filteredFiles.sort(new Comparator<File>() {
+        Collections.sort(filteredFiles, new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {
                 return o1.getName().compareTo(o2.getName());
@@ -275,7 +276,7 @@ public class ExtractGameState {
         ArrayList<SnapShot> firstSnapshots = new ArrayList<>();
         for (ArrayList<SnapShot> snapShotList : listofSnapShotList)
             firstSnapshots.add(snapShotList.get(0));
-        firstSnapshots.sort(new Comparator<SnapShot>() {
+        Collections.sort(firstSnapshots, new Comparator<SnapShot>() {
             @Override
             public int compare(SnapShot o1, SnapShot o2) {
                 return Long.valueOf(o2.time).compareTo(Long.valueOf(o1.time));  //reversed order
@@ -286,7 +287,7 @@ public class ExtractGameState {
         ArrayList<SnapShot> lastSnapshots = new ArrayList<>();
         for (ArrayList<SnapShot> snapShotList : listofSnapShotList)
             lastSnapshots.add(snapShotList.get(snapShotList.size() - 1));
-        lastSnapshots.sort(new Comparator<SnapShot>() {
+        Collections.sort(lastSnapshots, new Comparator<SnapShot>() {
             @Override
             public int compare(SnapShot o1, SnapShot o2) {
                 return Long.valueOf(o1.time).compareTo(Long.valueOf(o2.time));  //natural order

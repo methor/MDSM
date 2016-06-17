@@ -28,6 +28,11 @@ public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> {
         serverTask.start();
     }
 
+    public MessagingService getMessagingService()
+    {
+        return MessagingService.WEAK;
+    }
+
 
     public synchronized static WeakDsm INSTANCE()
     {

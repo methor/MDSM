@@ -2,6 +2,7 @@ package dsm;
 
 
 import consistencyinfrastructure.architecture.IRegisterClient;
+import consistencyinfrastructure.communication.MessagingService;
 
 import java.io.Serializable;
 
@@ -13,6 +14,7 @@ public abstract class AbstractDsm<P extends Serializable, K extends Serializable
     public static final String TAG = AbstractDsm.class.getName();
 
 
+    public abstract MessagingService getMessagingService();
 
     public abstract void onDestroy();
 }

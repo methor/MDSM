@@ -9,16 +9,20 @@ package consistencyinfrastructure.communication;
 
 import consistencyinfrastructure.config.NetworkConfig;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,12 +40,16 @@ public enum MessagingService implements IReceiver {
     private static final String TAG = MessagingService.class.getName();
 
     private static ExecutorService exec = Executors.newCachedThreadPool();
-    private static ExecutorService sendExec = Executors.newCachedThreadPool();
+    private static ScheduledExecutorService sendExec = Executors.newScheduledThreadPool(8);
+    private static ScheduledExecutorService seqExec = Executors.newSingleThreadScheduledExecutor();
 
     /**
      * server socket on which the server replica is listening to and accept messages
      */
     private ServerSocket server_socket = null;
+
+
+    public int injectedLatencyUpperBound = 0;
 
     /**
      * send the message to the designated receiver and return immediately
@@ -54,7 +62,6 @@ public enum MessagingService implements IReceiver {
     {
 
         final int port = getServerPort();
-        System.out.println("Send to " + receiver_ip + " " + port);
 //		Log.d(TAG, "Send to " + receiver_ip);
         Runnable runnable = new Runnable() {
             @Override
@@ -91,23 +98,29 @@ public enum MessagingService implements IReceiver {
                     try
                     {
                         prevSocketOut.getOos().writeObject(msg);
+//                      prevSocketOut.getOos().writeObject(new String("abcde"));
                         prevSocketOut.getOos().flush();
                     } catch (IOException e)
                     {
                         e.printStackTrace();
+                        if (e instanceof StreamCorruptedException)
+                            System.err.println(((StreamCorruptedException) e).getMessage());
                     }
                 }
 
             }
         };
+        Random random = new Random();
 
-        if (this == WEAK || this == CAUSAL)
-            runnable.run();
+        if (this == WEAK || this == CAUSAL) {
+            seqExec.schedule(runnable, random.nextInt(injectedLatencyUpperBound+1), TimeUnit.MILLISECONDS);
+//          runnable.run();
+        }
         else
         {
             try
             {
-                sendExec.execute(runnable);
+                sendExec.schedule(runnable, random.nextInt(injectedLatencyUpperBound + 1), TimeUnit.MILLISECONDS);
             } catch (Exception e)
             {
                 e.printStackTrace();
@@ -146,13 +159,14 @@ public enum MessagingService implements IReceiver {
 
                                 while (true)
                                 {
-                                    Object obj = ois.readObject();
+                                    ois.readObject();
+//                                    Object obj = ois.readObject();
                                     //TODO
                                     //Log.i(TAG, obj.getClass().toString());
-                                    IPMessage msg = (IPMessage)obj;
+//                                    IPMessage msg = (IPMessage)obj;
                                     //Log.i(TAG, "Receiving message: " + msg.toString());
 
-                                    MessagingService.this.onReceive(msg);
+//                                    MessagingService.this.onReceive(msg);
                                 }
 
 
@@ -162,10 +176,12 @@ public enum MessagingService implements IReceiver {
                             } catch (IOException ioe)
                             {
                                 ioe.printStackTrace();
-                            } catch (ClassNotFoundException cnfe)
+                            }
+                            catch (ClassNotFoundException cnfe)
                             {
                                 cnfe.printStackTrace();
-                            } finally
+                            }
+                            finally
                             {
                                 try
                                 {
@@ -205,7 +221,6 @@ public enum MessagingService implements IReceiver {
         else // TODO: other messages
             return;*/
         String s = msg.getClass().getSimpleName();
-        System.out.println("Message type:" + s);
         receiver.onReceive(msg);
 
     }
@@ -240,6 +255,7 @@ public enum MessagingService implements IReceiver {
 
                 exec.shutdown();
                 sendExec.shutdown();
+                seqExec.shutdown();
 
                 for (SocketOut socketOut : clientMap.values())
                     socketOut.getSocket().close();
@@ -258,7 +274,9 @@ public enum MessagingService implements IReceiver {
         if (exec.isShutdown())
             exec = Executors.newCachedThreadPool();
         if (sendExec.isShutdown())
-            sendExec = Executors.newCachedThreadPool();
+            sendExec = Executors.newScheduledThreadPool(8);
+        if (seqExec.isShutdown())
+            seqExec = Executors.newSingleThreadScheduledExecutor();
     }
 
 

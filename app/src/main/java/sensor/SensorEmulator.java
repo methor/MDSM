@@ -28,7 +28,7 @@ public class SensorEmulator extends Thread {
         this.sampleIntervalMicro = sampleIntervalMicro;
     }
 
-    public int sampleIntervalMicro = 50000;
+    public int sampleIntervalMicro = 100000;
     public SensorEmulator(GameModel model)
     {
         this.model = model;
@@ -54,6 +54,11 @@ public class SensorEmulator extends Thread {
                 Log.d(TAG, "interrupted");
                 break;
             }
+
+            // restrict sensor event number
+            if (actNumber == 11000)
+                continue;
+
             Random random = new Random();
             float a1 = random.nextFloat();
             if (random.nextFloat() > 0.5)

@@ -54,6 +54,11 @@ public class CausalDsm extends AbstractDsm<Serializable, Key, Serializable> {
     }
 
     @Override
+    public MessagingService getMessagingService() {
+        return MessagingService.CAUSAL;
+    }
+
+    @Override
     public void onDestroy()
     {
         serverTask.onDestroy();

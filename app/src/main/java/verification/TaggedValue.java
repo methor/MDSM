@@ -2,6 +2,8 @@ package verification;
 
 import java.io.Serializable;
 
+import model.Ball;
+
 /**
  * Created by mio on 4/21/16.
  */

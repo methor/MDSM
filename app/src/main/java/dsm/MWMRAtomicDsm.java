@@ -61,6 +61,11 @@ public class MWMRAtomicDsm extends AbstractDsm<String, Key, VersionValue> {
     }
 
     @Override
+    public MessagingService getMessagingService() {
+        return MessagingService.MATO;
+    }
+
+    @Override
     public void onDestroy()
     {
         serverTask.onDestroy();
