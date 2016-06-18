@@ -2,6 +2,8 @@ package weakconsistency;
 
 import consistencyinfrastructure.architecture.IRegisterServer;
 import consistencyinfrastructure.data.kvs.Key;
+import log.NetworkLog;
+import sun.nio.ch.Net;
 
 import java.io.Serializable;
 
@@ -13,6 +15,14 @@ public enum WeakConsistencyServer implements IRegisterServer {
     INSTANCE;
 
 
+    NetworkLog networkLog = null;
+
+    public void registerNetworkLog(NetworkLog log)
+    {
+        this.networkLog = log;
+    }
+
+
 
     public void handleWeakConsistencyMessage(WeakConsistencyMessage msg)
     {
@@ -21,6 +31,11 @@ public enum WeakConsistencyServer implements IRegisterServer {
         Serializable val = msg.val;
         KVStoreInMemory.INSTANCE.put(key, val);
 
+        if (networkLog != null)
+            networkLog.logNetworkLatency(msg);
+
     }
+
+
 
 }

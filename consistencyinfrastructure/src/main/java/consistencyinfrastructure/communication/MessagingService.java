@@ -159,14 +159,13 @@ public enum MessagingService implements IReceiver {
 
                                 while (true)
                                 {
-                                    ois.readObject();
-//                                    Object obj = ois.readObject();
+                                    Object obj = ois.readObject();
                                     //TODO
                                     //Log.i(TAG, obj.getClass().toString());
-//                                    IPMessage msg = (IPMessage)obj;
+                                    IPMessage msg = (IPMessage)obj;
                                     //Log.i(TAG, "Receiving message: " + msg.toString());
 
-//                                    MessagingService.this.onReceive(msg);
+                                    MessagingService.this.onReceive(msg);
                                 }
 
 

@@ -3,6 +3,7 @@ package model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,6 +140,27 @@ public class Ball implements Serializable{
         this.collisionFlagsWithField = new ArrayList<>(ball.collisionFlagsWithField);
         this.collisionFlagsWithBalls = new ArrayList<>(ball.collisionFlagsWithBalls);
 
+    }
+
+    public static Ball randomBall()
+    {
+        Ball ball = new Ball();
+        Random random = new Random();
+
+        ball.X = random.nextFloat();
+        ball.Y = random.nextFloat();
+        ball.speedX = random.nextFloat();
+        ball.speedY = random.nextFloat();
+        ball.accelarationX = random.nextFloat();
+        ball.accelarationY = random.nextFloat();
+        ball.ballID = random.nextInt();
+
+        for (int i = 0; i < 4; i++)
+        {
+            ball.collisionFlagsWithBalls.add((random.nextBoolean()));
+            ball.collisionFlagsWithField.add(random.nextBoolean());
+        }
+        return ball;
     }
 
     public void directSetAccelarationX(float accelarationX)

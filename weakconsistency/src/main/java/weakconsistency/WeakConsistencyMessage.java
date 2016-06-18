@@ -14,6 +14,13 @@ public class WeakConsistencyMessage extends IPMessage {
     Serializable val = ReservedValue.RESERVED_VALUE;
 
 
+    public Key getKey() {
+        return key;
+    }
+
+    public Serializable getVal() {
+        return val;
+    }
 
     public WeakConsistencyMessage(String ip, int cnt, Key key, Serializable val)
     {

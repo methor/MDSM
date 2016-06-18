@@ -147,10 +147,11 @@ public class MainActivity extends Activity {
         model.start();
         gameView = new GameView(this, model);
 
+        if (dsm instanceof WeakDsm)
+            ((WeakDsm) dsm).registerGameModel(model);
+
 
         //P2PNetwork.RESERVED_VALUE.setDSM(dsm);
-
-
 
 
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -215,9 +216,7 @@ public class MainActivity extends Activity {
                                     + handledNumber);
                         }
 
-                    }
-                    else
-                    {
+                    } else {
                         Log.d(TAG, "SampleInterval = " + sampleIntervalMicro + ", Recent: " + actNumber + ", " + handledNumber);
                     }
                 }

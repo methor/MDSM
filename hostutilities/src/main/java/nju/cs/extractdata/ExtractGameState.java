@@ -38,7 +38,7 @@ public class ExtractGameState {
         adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
                 "log");
 
-        String dsmType = "MWMRAtomicDsm";
+        String dsmType = "WeakDsm";
 
         File rootDir = new File("log/");
         ArrayList<File> deviceDirs = new ArrayList<>();

@@ -16,15 +16,15 @@ public class ValueTagging {
 
     static int sID = 0;
 
-    public static TaggedValue valueTagging(String variable, Serializable value, int id)
+    public static TaggedValue valueTagging(String variable, Serializable value, int id, long time)
     {
-        return new TaggedValue(String.valueOf(SessionManagerWrapper.NODEID), variable, id, value);
+        return new TaggedValue(String.valueOf(SessionManagerWrapper.NODEID), variable, id, time, value);
     }
 
-    public static TaggedValue valueTagging(String variable, Serializable value)
+    public static TaggedValue valueTagging(String variable, long time, Serializable value)
     {
         sID++;
-        return new TaggedValue(String.valueOf(SessionManagerWrapper.NODEID), variable, sID, value);
+        return new TaggedValue(String.valueOf(SessionManagerWrapper.NODEID), variable, sID, time, value);
     }
 
     public static Serializable tagStripping(TaggedValue taggedValue)

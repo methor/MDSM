@@ -14,12 +14,14 @@ public class TaggedValue implements Serializable{
     String device;
     String variable;
     int sID;
+    long time;
     Serializable value;
 
-    public TaggedValue(String device, String variable, int sID, Serializable value) {
+    public TaggedValue(String device, String variable, int sID, long time, Serializable value) {
         this.device = device;
         this.variable = variable;
         this.sID = sID;
+        this.time = time;
         this.value = value;
     }
 
@@ -29,6 +31,7 @@ public class TaggedValue implements Serializable{
                 "device='" + device + '\'' +
                 ", variable='" + variable + '\'' +
                 ", sID=" + sID +
+                ", time=" + time +
                 ", value=" + value +
                 '}';
     }
@@ -43,7 +46,17 @@ public class TaggedValue implements Serializable{
         String[] items = tag.split(" ");
         if (items.length != 3)
             return null;
-        return new TaggedValue(items[0], items[1], Integer.valueOf(items[2]), null);
+        return new TaggedValue(items[0], items[1], Integer.valueOf(items[2]), 0, null);
+    }
+
+    public long getTime()
+    {
+        return time;
+    }
+
+    public void setValue(Serializable val)
+    {
+        this.value = val;
     }
 
     public String getVariable()
