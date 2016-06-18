@@ -60,11 +60,11 @@ public class ExtractGameState {
             e.printStackTrace();
         }
 
-        // NetworkLatency
-        latestSpecifiedFiles = getLatestForPattern(allFiles, "NetworkLatency.*" + dsmType + ".*", deviceDirs.size());
+        // RoundLatency
+        latestSpecifiedFiles = getLatestForPattern(allFiles, "RoundLatency.*" + dsmType + ".*", deviceDirs.size());
         System.out.println(Arrays.toString(latestSpecifiedFiles.toArray(new File[0])));
         try {
-            FileWriter fileWriter = new FileWriter("NetworkLatency.txt", true);
+            FileWriter fileWriter = new FileWriter("RoundLatency.txt", true);
             fileWriter.append(latestSpecifiedFiles.get(0).getName() +
             " " + averageForAllFilesNumbers(latestSpecifiedFiles) + "\n");
             fileWriter.close();

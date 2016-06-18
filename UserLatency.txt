@@ -39,3 +39,11 @@ UserLatency_dsm.WeakDsm_06.18. at 10:15:34_20_LatencyUpperBound:15.dat 0.67565
 UserLatency_dsm.WeakDsm_06.18. at 10:26:28_20_LatencyUpperBound:20.dat 0.68515
 UserLatency_dsm.WeakDsm_06.18. at 11:02:12_15.dat 0.7224
 UserLatency_dsm.WeakDsm_06.18. at 11:15:19_15.dat 0.66125
+UserLatency_dsm.WeakDsm_06.18. at 11:27:44_15.dat 0.6736
+UserLatency_dsm.WeakDsm_06.18. at 11:42:21_18.dat 0.68785
+UserLatency_dsm.WeakDsm_06.18. at 15:03:53_18.dat 0.66005
+UserLatency_dsm.WeakDsm_06.18. at 15:33:56_18.dat 0.6811
+UserLatency_dsm.WeakDsm_06.18. at 15:46:41_20.dat 0.68205
+UserLatency_dsm.WeakDsm_06.18. at 16:11:37_50.dat 0.70535
+UserLatency_dsm.WeakDsm_06.18. at 16:22:11_50.dat 0.6845
+UserLatency_dsm.WeakDsm_06.18. at 16:37:00_50.dat 0.6918
