@@ -28,25 +28,27 @@ public enum CausalConsistencyServer implements IRegisterServer {
     private Runnable sendRunnable = new Runnable() {
         @Override
         public void run() {
-//            ConcurrentLinkedDeque<CausalConsistencyMessage> outQueue = MessagingQueues.INSTANCE.getOutQueue();
-//
-//            while (!Thread.interrupted()) {
-//                try {
-//                    CausalConsistencyMessage msg = outQueue.pop();
-//                    for (String ip : SessionManagerWrapper.OTHERIP)
-//                        MessagingService.CAUSAL.sendOneWay(ip, msg);
-//                } catch (NoSuchElementException e) {
-//                    e.printStackTrace();
-//                }
+            ConcurrentLinkedDeque<CausalConsistencyMessage> outQueue = MessagingQueues.INSTANCE.getOutQueue();
+
+            while (!Thread.interrupted()) {
+                if (!outQueue.isEmpty()) {
+                    try {
+                        CausalConsistencyMessage msg = outQueue.pop();
+                        for (String ip : SessionManagerWrapper.OTHERIP)
+                            MessagingService.CAUSAL.sendOneWay(ip, msg);
+                    } catch (NoSuchElementException e) {
+                        e.printStackTrace();
+                    }
 //                try {
 //                    Thread.sleep(5);
 //                } catch (InterruptedException e) {
 //                    e.printStackTrace();
 //                    break;
 //                }
-//            }
-//            MessagingQueues.INSTANCE.clearOutQueue();
-//            System.out.println("SendThread exits successfully");
+                }
+            }
+            MessagingQueues.INSTANCE.clearOutQueue();
+            System.out.println("SendThread exits successfully");
 
         }
     };
@@ -57,12 +59,10 @@ public enum CausalConsistencyServer implements IRegisterServer {
             ConcurrentLinkedDeque<CausalConsistencyMessage> inQueue = MessagingQueues.INSTANCE.getInQueue();
 
             while (!Thread.interrupted()) {
-                try {
-                    if (!inQueue.isEmpty()) {
-                    CausalConsistencyMessage msg = inQueue.getFirst();
-                    synchronized (KVStoreInMemory.INSTANCE.getVectorTimestamp())
-                    {
-                        VectorTimestamp selfVectorTimestamp = KVStoreInMemory.INSTANCE.getVectorTimestamp();
+                if (!inQueue.isEmpty()) {
+                    try {
+                        CausalConsistencyMessage msg = inQueue.getFirst();
+                        VectorTimestamp selfVectorTimestamp = new VectorTimestamp(KVStoreInMemory.INSTANCE.getVectorTimestamp());
                         VectorTimestamp incomingVectorTimestamp = msg.getVt();
 
                         int index = msg.getOriginator();
@@ -71,29 +71,26 @@ public enum CausalConsistencyServer implements IRegisterServer {
                             continue;
 
                         int i;
-                        for (i = 0; i < selfVectorTimestamp.getVectorTimestamp().size(); i++)
-                        {
-                            if (i != index)
-                            {
+                        for (i = 0; i < selfVectorTimestamp.getVectorTimestamp().size(); i++) {
+                            if (i != index) {
                                 if (incomingVectorTimestamp.getVectorTimestamp().get(i) >
                                         selfVectorTimestamp.getVectorTimestamp().get(i))
                                     break;
                             }
                         }
-                        if (i == selfVectorTimestamp.getVectorTimestamp().size())
-                        {
+                        if (i == selfVectorTimestamp.getVectorTimestamp().size()) {
                             inQueue.pop();
                             KVStoreInMemory.INSTANCE.put(msg.getKey(), msg.getPayload());
                             KVStoreInMemory.INSTANCE.getVectorTimestamp().increament(index);
                         }
 
+                    } catch (NoSuchElementException e) {
+                        e.printStackTrace();
                     }
-//                        CausalConsistencyMessage msg = inQueue.pop();
+//                        inQueue.pop();
 //                        KVStoreInMemory.INSTANCE.put(msg.getKey(), msg.getPayload());
-                    }
-                } catch (NoSuchElementException e) {
-                    e.printStackTrace();
                 }
+
             }
 
             MessagingQueues.INSTANCE.clearInQueue();

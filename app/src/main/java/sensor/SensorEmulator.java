@@ -28,7 +28,7 @@ public class SensorEmulator extends Thread {
         this.sampleIntervalMicro = sampleIntervalMicro;
     }
 
-    public int sampleIntervalMicro = 20000;
+    public int sampleIntervalMicro = 100000;
     public SensorEmulator(GameModel model)
     {
         this.model = model;

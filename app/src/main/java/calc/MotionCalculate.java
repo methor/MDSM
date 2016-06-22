@@ -173,8 +173,6 @@ public enum MotionCalculate {
 
     public void updateAll(float roundTime) {
 
-        if (roundTime >= 0.25f)
-            return;
         for (Ball ball : snapShot.ballList) {
             ball.collisionFlagsWithField.clear();
             ball.collisionFlagsWithBalls.clear();

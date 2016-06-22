@@ -47,7 +47,8 @@ public class MainActivity extends Activity {
 
     private void unregisterDataSource() {
         if (DEBUG == true)
-            sensorEmulator.interrupt();
+//            sensorEmulator.interrupt();
+        ;
         else if (mSensorManager != null)
             mSensorManager.unregisterListener(mAccelarateSensor);
     }
@@ -68,6 +69,8 @@ public class MainActivity extends Activity {
         unregisterDataSource();
         Log.d(TAG, "unregisterDataSource");
         model.onDestroy();
+        if (DEBUG)
+            sensorEmulator.interrupt();
         Log.d(TAG, "model onDestroy");
         dsm.onDestroy();
         Log.d(TAG, "dsm onDestroy");

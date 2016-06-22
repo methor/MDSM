@@ -49,7 +49,7 @@ public enum MessagingService implements IReceiver {
     private ServerSocket server_socket = null;
 
 
-    public int injectedLatencyUpperBound = 0;
+    public int injectedLatencyUpperBound = 25;
 
     /**
      * send the message to the designated receiver and return immediately

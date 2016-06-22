@@ -32,7 +32,7 @@ public class VectorTimestamp implements Serializable {
     }
 
 
-    public ArrayList<Integer> getVectorTimestamp() {
+    public synchronized ArrayList<Integer> getVectorTimestamp() {
         return vectorTimestamp;
     }
 

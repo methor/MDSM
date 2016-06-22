@@ -30,10 +30,10 @@ public enum CausalConsistencyClient implements IRegisterClient<Serializable, Key
                 key, val, GroupConfig.INSTANCE.getSelfIndex());
 
         System.out.println("send " + msg);
-//        MessagingQueues.INSTANCE.addOutQueueTask(msg);
+        MessagingQueues.INSTANCE.addOutQueueTask(msg);
 
-        for (String ipo : SessionManagerWrapper.OTHERIP)
-            MessagingService.CAUSAL.sendOneWay(ipo, msg);
+//        for (String ipo : SessionManagerWrapper.OTHERIP)
+//            MessagingService.CAUSAL.sendOneWay(ipo, msg);
 
         return msg;
 
