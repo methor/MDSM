@@ -45,7 +45,7 @@ public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> implem
 
         WeakConsistencyServer.INSTANCE.registerNetworkLog(this);
 
-
+        KVStoreInMemory.INSTANCE.clean();
         MessagingService.WEAK.registerReceiver(WeakConsistencyMessagingService.INSTANCE);
         serverTask = MessagingService.WEAK.new ServerTask(SessionManager.getNewInstance().getNodeIp());
         serverTask.start();

@@ -88,12 +88,12 @@ public class GameModel extends Thread {
     public LogParamsToFile createLog(String name)
     {
         Date date = new Date();
-        SimpleDateFormat ft = new SimpleDateFormat("MM.dd. 'at' HH:mm:ss");
+        SimpleDateFormat ft = new SimpleDateFormat("MM.dd.'at'HH.mm.ss");
         String tag = dsm.getClass().getName();
         String feedback = (((MainActivity) activity).feedbackEnabled ?
                 "_" + "Feedback" : "");
         String injectedLatencyUpperBound = (dsm.getMessagingService().injectedLatencyUpperBound == 0 ?
-                "" : "_LatencyUpperBound:" + String.valueOf(dsm.getMessagingService().injectedLatencyUpperBound));
+                "" : "_LatencyUpperBound." + String.valueOf(dsm.getMessagingService().injectedLatencyUpperBound));
 
         String sensorFreq = "";
         if (MainActivity.DEBUG)
@@ -125,7 +125,7 @@ public class GameModel extends Thread {
 
         // only handle 10000 sensor events
         if (handledNumber == 10000) {
-            Log.d(TAG, "Operations number reaches 10000");
+            Log.d(TAG, "Operations number reaches " + handledNumber);
             return;
         }
 

@@ -20,6 +20,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +42,7 @@ public enum MessagingService implements IReceiver {
 
     private static ExecutorService exec = Executors.newCachedThreadPool();
     private static ScheduledExecutorService sendExec = Executors.newScheduledThreadPool(8);
-    private static ScheduledExecutorService seqExec = Executors.newSingleThreadScheduledExecutor();
+
 
     /**
      * server socket on which the server replica is listening to and accept messages
@@ -49,7 +50,7 @@ public enum MessagingService implements IReceiver {
     private ServerSocket server_socket = null;
 
 
-    public int injectedLatencyUpperBound = 25;
+    public int injectedLatencyUpperBound = 0;
 
     /**
      * send the message to the designated receiver and return immediately
@@ -113,8 +114,12 @@ public enum MessagingService implements IReceiver {
         Random random = new Random();
 
         if (this == WEAK || this == CAUSAL) {
-            seqExec.schedule(runnable, random.nextInt(injectedLatencyUpperBound+1), TimeUnit.MILLISECONDS);
-//          runnable.run();
+            try {
+                Thread.sleep(random.nextInt(injectedLatencyUpperBound+1));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            runnable.run();
         }
         else
         {
@@ -254,7 +259,6 @@ public enum MessagingService implements IReceiver {
 
                 exec.shutdown();
                 sendExec.shutdown();
-                seqExec.shutdown();
 
                 for (SocketOut socketOut : clientMap.values())
                     socketOut.getSocket().close();
@@ -274,8 +278,8 @@ public enum MessagingService implements IReceiver {
             exec = Executors.newCachedThreadPool();
         if (sendExec.isShutdown())
             sendExec = Executors.newScheduledThreadPool(8);
-        if (seqExec.isShutdown())
-            seqExec = Executors.newSingleThreadScheduledExecutor();
+
+
     }
 
 
@@ -303,6 +307,7 @@ public enum MessagingService implements IReceiver {
             messagingService.exit();
         }
     }
+
 
 }
 

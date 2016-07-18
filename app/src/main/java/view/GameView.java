@@ -123,14 +123,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         for (Ball ball : ballList)
         {
             drawBall(ball, canvas, paint);
-            paint.setTextSize(20);
-            canvas.drawText(ball.getBallID() + "[x=" + ball.getX() + ",y=" + ball.getY(), 0, y = (y + 40), paint);
-            canvas.drawText("    accX=" + ball.getAccelarationX() + ",accY=" + ball.getAccelarationY(), 0, y = (y + 40), paint);
-            canvas.drawText("    sX=" + ball.getSpeedX() + ",sY=" + ball.getSpeedY(), 0, y = (y + 40), paint);
+//            paint.setTextSize(20);
+//            canvas.drawText(ball.getBallID() + "[x=" + ball.getX() + ",y=" + ball.getY(), 0, y = (y + 40), paint);
+//            canvas.drawText("    accX=" + ball.getAccelarationX() + ",accY=" + ball.getAccelarationY(), 0, y = (y + 40), paint);
+//            canvas.drawText("    sX=" + ball.getSpeedX() + ",sY=" + ball.getSpeedY(), 0, y = (y + 40), paint);
         }
-        Random random = new Random();
-
-        canvas.drawText(String.valueOf(random.nextLong()), 0, Constant.FIELD_HEIGHT / 2, paint);
 
         surfaceHolder.unlockCanvasAndPost(canvas);
 

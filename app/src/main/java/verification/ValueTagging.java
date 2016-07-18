@@ -1,13 +1,9 @@
 package verification;
 
-import android.os.Build;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import consistencyinfrastructure.login.SessionManagerWrapper;
-import model.Ball;
 
 /**
  * Created by mio on 4/21/16.

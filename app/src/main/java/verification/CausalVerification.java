@@ -22,9 +22,9 @@ import nju.cs.ADBExecutor;
 public class CausalVerification {
 
     public static void main(String[] args) {
-        ADBExecutor adbExecutor = new ADBExecutor("adb");
-        adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
-                "log");
+//        ADBExecutor adbExecutor = new ADBExecutor("adb");
+//        adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
+//                "log");
         List<File> logDirs = new ArrayList<>();
         List<File> latestFiles = new ArrayList<>();
 
@@ -126,13 +126,15 @@ public class CausalVerification {
             }
 
             // compute transitive closure of graph
-            for (int mid = 0; mid < graph.size(); mid++)
+            for (int mid = 0; mid < graph.size(); mid++) {
+                System.out.println("progress: " + mid);
                 for (int src = 0; src < graph.size(); src++)
                     for (int dest = 0; dest < graph.size(); dest++)
                         if (!adjMatrix[src][dest]) {
                             adjMatrix[src][dest] = adjMatrix[src][mid] && adjMatrix[mid][dest];
 //                            changed = changed || adjMatrix[src][dest];    // is it changed?
                         }
+            }
         }
         ArrayList<ArrayList<OpNode>> observationList = reconstructObservationList(graph);
 
@@ -157,13 +159,15 @@ public class CausalVerification {
 
                 System.out.println("observation " + i + " compute transitive closure");
                 // compute transitive closure of graph
-                for (int mid = 0; mid < observation.size(); mid++)
+                for (int mid = 0; mid < observation.size(); mid++) {
+                    System.out.println("progress: " + mid);
                     for (int src = 0; src < observation.size(); src++)
                         for (int dest = 0; dest < observation.size(); dest++)
                             if (!adjMatrix[src][dest]) {
                                 adjMatrix[src][dest] = adjMatrix[src][mid] && adjMatrix[mid][dest];
 //                            changed = changed || adjMatrix[src][dest];    // is it changed?
                             }
+                }
 
                 System.out.println("observation " + i + " update graph");
                 // update graph based on transitive closure
