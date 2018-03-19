@@ -9,8 +9,8 @@ public class CopyToHost {
 
     public static void main(String[] args)
     {
-        ADBExecutor adbExecutor = new ADBExecutor("adb");
-        adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
+        ADBExecutor adbExecutor = new ADBExecutor("D:\\Android\\sdk\\platform-tools\\adb.exe");
+        adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir/",
                 "log");
     }
 }

@@ -61,9 +61,9 @@ public class CausalDsm extends AbstractDsm<Serializable, Key, Serializable> {
     @Override
     public void onDestroy()
     {
+        CausalConsistencyServer.INSTANCE.onDestroy();
         serverTask.onDestroy();
         KVStoreInMemory.INSTANCE.clean();
-        CausalConsistencyServer.INSTANCE.onDestroy();
         instance = null;
     }
 

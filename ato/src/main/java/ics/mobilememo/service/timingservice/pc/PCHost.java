@@ -194,7 +194,7 @@ public class PCHost
 	
 	public static void main(String[] args) throws InterruptedException
 	{
-		ADBExecutor adb_executor = new ADBExecutor("C:\\Users\\Mio\\AppData\\Local\\Android\\sdk\\platform-tools\\adb.exe ");
+		ADBExecutor adb_executor = new ADBExecutor("D:\\Android\\sdk\\platform-tools\\adb.exe");
 		Map<String, Integer> device_hostport_map = adb_executor.execAdbOnlineDevicesPortForward();
 		final PCHost host = new PCHost(device_hostport_map);
 

@@ -7,6 +7,7 @@
 package consistencyinfrastructure.group;
 
 import consistencyinfrastructure.group.member.SystemNode;
+import consistencyinfrastructure.login.SessionManager;
 import consistencyinfrastructure.login.SessionManagerWrapper;
 
 import java.util.ArrayList;
@@ -79,6 +80,9 @@ public enum GroupConfig
 	public void clearReplicas()
 	{
 		replica_list.clear();
+		SessionManagerWrapper.OTHERID = new ArrayList<>();
+		SessionManagerWrapper.OTHERIP = new ArrayList<>();
+		SessionManagerWrapper.OTHERNAME = new ArrayList<>();
 	}
 	
 	/**

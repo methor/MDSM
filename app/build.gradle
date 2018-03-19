@@ -4,13 +4,18 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
+    lintOptions {
+        abortOnError false
+        disable 'InvalidPackage'
+    }
+
     dexOptions {
         javaMaxHeapSize "4g"
     }
 
     defaultConfig {
         applicationId "com.njucs.ballgame"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"

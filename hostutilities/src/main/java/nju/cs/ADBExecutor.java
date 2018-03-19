@@ -223,13 +223,9 @@ public class ADBExecutor {
         try
         {
             proc = new ProcessBuilder(this.adb_directory, "-s", device_id, "pull", src_path, dest_path).start();
-            proc.waitFor();
-        } catch (InterruptedException ire)
-        {
-            ire.printStackTrace();
-        } catch (IOException ioe)
-        {
-            ioe.printStackTrace();
+            //proc.waitFor();
+        } catch (IOException  e){//| InterruptedException e) {
+            e.printStackTrace();
         }
 
         String result = this.collectResultFromProcess(proc);

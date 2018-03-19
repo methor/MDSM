@@ -5,4 +5,5 @@ targetCompatibility = 1.7
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':consistencyinfrastructure')
+//    compile project(':app')
 }

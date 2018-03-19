@@ -22,7 +22,9 @@ public enum  MessagingQueues {
 
     public boolean addInQueueTask(CausalConsistencyMessage msg)
     {
-        return inQueue.add(msg);
+        if (inQueue != null)
+            return inQueue.add(msg);
+        return false;
     }
 
     public synchronized ConcurrentLinkedDeque<CausalConsistencyMessage> getInQueue() {
@@ -39,7 +41,9 @@ public enum  MessagingQueues {
 
     public boolean addOutQueueTask(CausalConsistencyMessage msg)
     {
-        return outQueue.add(msg);
+        if (outQueue != null)
+            return outQueue.add(msg);
+        return false;
     }
 
     public void clearInQueue()

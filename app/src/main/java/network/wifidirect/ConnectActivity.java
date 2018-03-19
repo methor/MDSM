@@ -1,5 +1,6 @@
 package network.wifidirect;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
@@ -56,6 +57,9 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
 
     private boolean isWifiP2pEnabled;
 
+    static final int RUNNING_TIMES = 60;
+    int runningRemaining = RUNNING_TIMES;
+
 
     @Override
     protected void onPause() {
@@ -107,7 +111,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
         //toolbar.setSubtitle("Sub title");
 
         setSupportActionBar(toolbar);
-        feedbackEnabled = true;
+        feedbackEnabled = false;
 
 
         intentFilter = new IntentFilter();
@@ -264,6 +268,41 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        final Intent fata = data;
+        if (resultCode == RESULT_OK) {
+            Boolean value = data.getBooleanExtra("wait10s", false);
+//            Boolean changeConsistency = data.getBooleanExtra("changeConsistency", false);
+//            if (changeConsistency) {
+//                ((PeerInfoFragment) getFragmentManager().findFragmentById(R.id.frag_detail)).consistency
+//                        = fata.getStringExtra("consistency");
+//            }
+            feedbackEnabled = false;
+            if (value && --runningRemaining > 0) {
+                new Thread() {
+                    public void run() {
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                findViewById(R.id.btn_startGame).performClick();
+
+                            }
+                        });
+                    }
+                }.start();
+            }
+            else if (value) {
+                runningRemaining = RUNNING_TIMES;
+            }
+        }
+    }
+
 
     public void startMainActivity(final WifiP2pInfo info, final Thread serverThread) {
 
@@ -297,8 +336,9 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                             e.printStackTrace();
                         }
                     }
-                    consistency = ((PeerInfoFragment) getFragmentManager().
-                            findFragmentById(R.id.frag_detail)).consistency;
+                    consistency = ((PeerInfoFragment) getFragmentManager().findFragmentById(R.id.frag_detail)).consistency;
+//                    consistency = ((PeerInfoFragment) getFragmentManager().
+//                            findFragmentById(R.id.frag_detail)).consistency;
                 } else {
 
                     try {
@@ -316,13 +356,13 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
 
                             String myIp = socket.getLocalAddress().getHostAddress();
 
-                            if (!new SessionManagerWrapper().isSessionAlive(myIp, ownerAddress, 101, 100)) {
-                                GroupConfig.INSTANCE.clearReplicas();
 
-                                GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress));
-                                GroupConfig.INSTANCE.addSelf(new SystemNode(101, "client", myIp));
+                            GroupConfig.INSTANCE.clearReplicas();
 
-                            }
+                            GroupConfig.INSTANCE.addReplica(new SystemNode(100, "server", ownerAddress));
+                            GroupConfig.INSTANCE.addSelf(new SystemNode(101, "client", myIp));
+
+
                         } finally {
                             socket.close();
                         }
@@ -346,7 +386,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
                     progressDialog.dismiss();
 
                 ((PeerInfoFragment) getFragmentManager().findFragmentById(R.id.frag_detail)).returnFromActivity = true;
-                startActivity(intent, bundle);
+                startActivityForResult(intent, 1, bundle);
             }
         };
 

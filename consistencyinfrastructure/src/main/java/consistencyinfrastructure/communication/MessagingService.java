@@ -59,54 +59,46 @@ public enum MessagingService implements IReceiver {
      * @param receiver_ip ip of the designated receiver
      * @param msg         message of type {@link IPMessage} to send
      */
-    public void sendOneWay(final String receiver_ip, final IPMessage msg)
-    {
+    public void sendOneWay(final String receiver_ip, final IPMessage msg) {
 
         final int port = getServerPort();
 //		Log.d(TAG, "Send to " + receiver_ip);
         Runnable runnable = new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
 
 
                 SocketOut socketOut = new SocketOut();
                 SocketOut prevSocketOut = clientMap.putIfAbsent(receiver_ip, socketOut);
-                if (prevSocketOut == null)
-                {
+                if (prevSocketOut == null) {
                     prevSocketOut = socketOut;
                 }
-                synchronized (prevSocketOut)
-                {
+                synchronized (prevSocketOut) {
                     Socket socket = prevSocketOut.getSocket();
-                    if (socket == null || !socket.isConnected() || socket.isClosed())
-                    {
+                    if (socket == null || !socket.isConnected() || socket.isClosed()) {
                         InetSocketAddress socket_address = new InetSocketAddress(
                                 receiver_ip, port);
                         socket = new Socket();
-                        try
-                        {
+                        try {
                             socket.connect(socket_address, NetworkConfig.TIMEOUT);
                             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                             prevSocketOut.setSocket(socket);
                             prevSocketOut.setOos(oos);
-                        } catch (IOException e)
-                        {
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
 
-                    try
-                    {
+                    try {
                         prevSocketOut.getOos().writeObject(msg);
 //                      prevSocketOut.getOos().writeObject(new String("abcde"));
                         prevSocketOut.getOos().flush();
-                    } catch (IOException e)
-                    {
+                    } catch (IOException e) {
                         e.printStackTrace();
                         if (e instanceof StreamCorruptedException)
                             System.err.println(((StreamCorruptedException) e).getMessage());
                     }
+
                 }
 
             }
@@ -114,20 +106,18 @@ public enum MessagingService implements IReceiver {
         Random random = new Random();
 
         if (this == WEAK || this == CAUSAL) {
-            try {
-                Thread.sleep(random.nextInt(injectedLatencyUpperBound+1));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (injectedLatencyUpperBound != 0) {
+                try {
+                    Thread.sleep(random.nextInt(injectedLatencyUpperBound + 1));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             runnable.run();
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 sendExec.schedule(runnable, random.nextInt(injectedLatencyUpperBound + 1), TimeUnit.MILLISECONDS);
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -139,73 +129,60 @@ public enum MessagingService implements IReceiver {
      *
      * @param server_ip ip address of server
      */
-    public void start2Listen(String server_ip)
-    {
+    public void start2Listen(String server_ip) {
         final int port = getServerPort();
-        try
-        {
-            server_socket = new ServerSocket();
-            server_socket.setReuseAddress(true);
-            server_socket.bind(new InetSocketAddress(server_ip, port));
 
-            try
-            {
-                while (true)
-                {
-                    final Socket connection = server_socket.accept();
-                    Runnable receive_task = new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            try
-                            {
-                                ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+        try {
+
+            try {
+                server_socket = new ServerSocket();
+                server_socket.setReuseAddress(true);
+                server_socket.bind(new InetSocketAddress(server_ip, port));
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
 
 
-                                while (true)
-                                {
-                                    Object obj = ois.readObject();
-                                    //TODO
-                                    //Log.i(TAG, obj.getClass().toString());
-                                    IPMessage msg = (IPMessage)obj;
-                                    //Log.i(TAG, "Receiving message: " + msg.toString());
-
-                                    MessagingService.this.onReceive(msg);
-                                }
+            while (true) {
+                final Socket connection = server_socket.accept();
+                Runnable receive_task = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
 
 
-                            } catch (StreamCorruptedException sce)
-                            {
-                                sce.printStackTrace();
-                            } catch (IOException ioe)
-                            {
-                                ioe.printStackTrace();
+                            while (!Thread.interrupted()) {
+                                Object obj = ois.readObject();
+                                //TODO
+                                //Log.i(TAG, obj.getClass().toString());
+                                IPMessage msg = (IPMessage) obj;
+                                //Log.i(TAG, "Receiving message: " + msg.toString());
+
+                                MessagingService.this.onReceive(msg);
                             }
-                            catch (ClassNotFoundException cnfe)
-                            {
-                                cnfe.printStackTrace();
-                            }
-                            finally
-                            {
-                                try
-                                {
-                                    connection.close();
-                                } catch (IOException e)
-                                {
-                                    e.printStackTrace();
-                                }
+
+
+                        } catch (StreamCorruptedException sce) {
+                            sce.printStackTrace();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        } catch (ClassNotFoundException cnfe) {
+                            cnfe.printStackTrace();
+                        } finally {
+                            try {
+                                connection.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         }
-                    };
-                    exec.execute(receive_task);
-                }
-            } finally
-            {
-                server_socket.close();
-
+                    }
+                };
+                exec.execute(receive_task);
             }
-        } catch (IOException ioe)
-        {
+
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }
@@ -218,8 +195,7 @@ public enum MessagingService implements IReceiver {
      * @param msg received message of type {@link IPMessage}
      */
     @Override
-    public void onReceive(IPMessage msg)
-    {
+    public void onReceive(IPMessage msg) {
         /*if (msg instanceof AtomicityMessage)
             AtomicityMessagingService.MATO.onReceive(msg);
         else // TODO: other messages
@@ -229,8 +205,7 @@ public enum MessagingService implements IReceiver {
 
     }
 
-    public int getServerPort()
-    {
+    public int getServerPort() {
         if (this == MATO)
             return NetworkConfig.NETWORK_PORT;
         else if (this == WEAK)
@@ -239,8 +214,7 @@ public enum MessagingService implements IReceiver {
             return NetworkConfig.NETWORK_PORT + 2;
     }
 
-    public MessagingService registerReceiver(IReceiver receiver)
-    {
+    public MessagingService registerReceiver(IReceiver receiver) {
         this.receiver = receiver;
         return this;
     }
@@ -249,31 +223,41 @@ public enum MessagingService implements IReceiver {
     /**
      * exit the messaging service: close the server socket
      */
-    public void exit()
-    {
-        if (this.server_socket != null && !this.server_socket.isClosed())
-        {
-            try
-            {
-                this.server_socket.close();
-
-                exec.shutdown();
-                sendExec.shutdown();
-
-                for (SocketOut socketOut : clientMap.values())
-                    socketOut.getSocket().close();
-
-
-
-            } catch (IOException ioe)
-            {
-                ioe.printStackTrace();
+    public void exit() {
+        for (SocketOut socketOut : clientMap.values()) {
+            synchronized (socketOut) {
+                if (socketOut.getSocket() != null && !socketOut.getSocket().isClosed()) {
+                    try {
+                        socketOut.getSocket().close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
+        clientMap.clear();
+        exec.shutdown();
+        sendExec.shutdown();
+        try {
+            while (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            while (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
-    private void startThreadPool()
-    {
+
+    private void startThreadPool() {
         if (exec.isShutdown())
             exec = Executors.newCachedThreadPool();
         if (sendExec.isShutdown())
@@ -289,21 +273,19 @@ public enum MessagingService implements IReceiver {
         String ip;
         MessagingService messagingService;
 
-        public ServerTask(String ip)
-        {
+        public ServerTask(String ip) {
             this.ip = ip;
             messagingService = MessagingService.this;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             messagingService.startThreadPool();
-            messagingService.start2Listen(ip);
+            if (server_socket == null || server_socket.isClosed() || !server_socket.isBound())
+                messagingService.start2Listen(ip);
         }
 
-        public void onDestroy()
-        {
+        public void onDestroy() {
             messagingService.exit();
         }
     }
@@ -315,27 +297,23 @@ class SocketOut {
     public Socket socket = null;
     public ObjectOutputStream oos = null;
 
-    public SocketOut()
-    {}
+    public SocketOut() {
+    }
 
 
-    public Socket getSocket()
-    {
+    public Socket getSocket() {
         return socket;
     }
 
-    public void setSocket(Socket socket)
-    {
+    public void setSocket(Socket socket) {
         this.socket = socket;
     }
 
-    public ObjectOutputStream getOos()
-    {
+    public ObjectOutputStream getOos() {
         return oos;
     }
 
-    public void setOos(ObjectOutputStream oos)
-    {
+    public void setOos(ObjectOutputStream oos) {
         this.oos = oos;
     }
 }

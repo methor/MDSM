@@ -17,11 +17,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import calc.MotionCalculate;
 import consistencyinfrastructure.data.kvs.Key;
+import consistencyinfrastructure.group.GroupConfig;
 import consistencyinfrastructure.login.SessionManagerWrapper;
 import dsm.AbstractDsm;
 import dsm.CausalDsm;
@@ -46,18 +48,21 @@ public class GameModel extends Thread {
     public static final String ORIENTATION_SOUTH = "south";
 
     public static final String ORIENTATION_NONE = "none";
+
+    public static final Random random = new Random();
     private List<Ball> ballList = new ArrayList<>();
 
     public Handler handler;
 
     public static final String TAG = GameModel.class.getName();
 
-    private Activity activity;
+    public Activity activity;
 
     private LogParamsToFile logDeviation;
     private LogParamsToFile logUserLatency;
     private LogParamsToFile logRoundLatency;
     private LogParamsToFile logTaggedValue;
+    private LogParamsToFile logOp;
 
     private int compileCount = 0;
 
@@ -78,10 +83,11 @@ public class GameModel extends Thread {
         this.dsm = dsm;
         this.activity = activity;
 
-        logDeviation = createLog("");
-        logUserLatency = createLog("UserLatency");
-        logRoundLatency = createLog("RoundLatency");
-        logTaggedValue = createLog("TaggedValue");
+//        logDeviation = createLog("");
+//        logUserLatency = createLog("UserLatency");
+//        logRoundLatency = createLog("RoundLatency");
+//        logTaggedValue = createLog("TaggedValue");
+        logOp = createLog("logOp");
     }
 
 
@@ -102,7 +108,7 @@ public class GameModel extends Thread {
         name = (name.isEmpty() ? name : name + "_");
 
         return new LogParamsToFile(activity.getApplication(), name + tag + feedback + "_" +
-                ft.format(date) + sensorFreq + injectedLatencyUpperBound + ".dat");
+                ft.format(date) + sensorFreq + injectedLatencyUpperBound + "__" + SessionManagerWrapper.NODEID);
     }
 
     public List<Ball> getBallList() {
@@ -149,7 +155,7 @@ public class GameModel extends Thread {
 
         if (MainActivity.DEBUG) {
             processTime = System.currentTimeMillis();
-            logUserLatency.write(String.valueOf(processTime - userActTime));
+//            logUserLatency.write(String.valueOf(processTime - userActTime));
 
         }
 
@@ -196,50 +202,64 @@ public class GameModel extends Thread {
 
             //
             if (handledNumber == 0) {
-                logTaggedValue.write("W" + " " + ValueTagging.valueTagging(MY_KEY.toString(),
-                        ReservedValue.RESERVED_VALUE, 0, getPCTime()).getTag());
-                if (SessionManagerWrapper.isLeader())
-                    logTaggedValue.write("W" + " " + ValueTagging.valueTagging(GOAL_KEY.toString(),
-                            ReservedValue.RESERVED_VALUE, 0, getPCTime()).getTag());
+//                logTaggedValue.write("W" + " " + ValueTagging.valueTagging(MY_KEY.toString(),
+//                        ReservedValue.RESERVED_VALUE, 0, getPCTime()).getTag());
+//                if (SessionManagerWrapper.isLeader())
+//                    logTaggedValue.write("W" + " " + ValueTagging.valueTagging(GOAL_KEY.toString(),
+//                            ReservedValue.RESERVED_VALUE, 0, getPCTime()).getTag());
             }
 
             // dsm operation 1
-            Serializable s = ValueTagging.valueTagging(MY_KEY.toString(), getPCTime(), new Ball(myBall));
+            Serializable s = ValueTagging.valueTagging(MY_KEY.toString(), getPCTime(), new Ball(myBall)).setRnd(random.nextLong());
+            long beforeOpTime = getPCTime();
             dsm.put(MY_KEY, s);
-            logTaggedValue.write("W" + " " + ((TaggedValue) s).getTag());
+//            logTaggedValue.write("W" + " " + ((TaggedValue) s).getTag());
+            logOp.write(((TaggedValue) s).getVariable() + "|||" + ((TaggedValue) s).getTime() + "@" + ((TaggedValue) s).rnd
+                + "|||" + "WRITE" + "|||" + beforeOpTime + "|||" + getPCTime());
 
             // dsm operation 2
+            beforeOpTime = getPCTime();
             s = dsm.get(OTHER_KEY);
 
             if (dsm.getReservedValue().equals(s)) {
                 //
-                logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
-                        .OTHERID.get(0)), OTHER_KEY.toString(), 0, getPCTime(), null).getTag());
+//                logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
+//                        .OTHERID.get(0)), OTHER_KEY.toString(), 0, getPCTime(), null).getTag());
+                logOp.write(OTHER_KEY.toString() + "|||" + "DEFAULT" + "|||" + "READ" + "|||" + beforeOpTime + "|||" + getPCTime());
             } else {
-                logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
+//                logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
                 Ball rival = ((Ball) ValueTagging.tagStripping((TaggedValue) s));
                 snapShot.setBall(new Ball(rival));
+                logOp.write(OTHER_KEY.toString() + "|||" + ((TaggedValue) s).getTime() + "@" + ((TaggedValue) s).rnd
+                    + "|||" + "READ" + "|||" + beforeOpTime + "|||" + getPCTime());
             }
 
             // dsm operation 3
+            beforeOpTime = getPCTime();
             s = dsm.get(GOAL_KEY);
             if (dsm.getReservedValue().equals(s)) {
                 //
-                logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
-                        .getLeader()), GOAL_KEY.toString(), 0, getPCTime(), null).getTag());
+//                logTaggedValue.write("R" + " " + new TaggedValue(String.valueOf(SessionManagerWrapper
+//                        .getLeader()), GOAL_KEY.toString(), 0, getPCTime(), null).getTag());
+                logOp.write(GOAL_KEY.toString() + "|||" + "DEFAULT" + "|||" + "READ" + "|||" + beforeOpTime + "|||" + getPCTime());
             } else {
-                logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
+//                logTaggedValue.write("R" + " " + ((TaggedValue) s).getTag());
                 Ball goal = ((Ball) ValueTagging.tagStripping((TaggedValue) s));
                 snapShot.setBall(new Ball(goal));
+                logOp.write(GOAL_KEY.toString() + "|||" + ((TaggedValue) s).getTime() + "@" + ((TaggedValue) s).rnd
+                    + "|||" + "READ" + "|||" + beforeOpTime + "|||" + getPCTime());
             }
             MotionCalculate.INSTANCE.obtainSnapshot(snapShot);
             MotionCalculate.INSTANCE.updateAll(sampleIntervalSecF);
 
             // dsm operation 4
             s = ValueTagging.valueTagging(GOAL_KEY.toString(), getPCTime(),
-                    new Ball(snapShot.findBall(SnapShot.GOALBALLID)));
+                    new Ball(snapShot.findBall(SnapShot.GOALBALLID))).setRnd(random.nextLong());
+            beforeOpTime = getPCTime();
             dsm.put(GOAL_KEY, s);
-            logTaggedValue.write("W" + " " + ((TaggedValue) s).getTag());
+//            logTaggedValue.write("W" + " " + ((TaggedValue) s).getTag());
+            logOp.write(GOAL_KEY.toString() + "|||" + ((TaggedValue) s).getTime() + "@" + ((TaggedValue) s).rnd
+                + "|||" + "WRITE" + "|||" + beforeOpTime + "|||" + getPCTime());
 
             synchronized (this) {
                 ballList = snapShot.ballList;
@@ -249,7 +269,7 @@ public class GameModel extends Thread {
 
         if (MainActivity.DEBUG) {
             postProcessTime = System.currentTimeMillis();
-            logRoundLatency.write(String.valueOf(postProcessTime - processTime));
+//            logRoundLatency.write(String.valueOf(postProcessTime - processTime));
         }
 
 
@@ -258,7 +278,7 @@ public class GameModel extends Thread {
 
             long pcTime = getPCTime();
             snapShot.time = pcTime;
-            logDeviation.write(snapShot.toString());
+//            logDeviation.write(snapShot.toString());
 
         }
 
@@ -270,7 +290,7 @@ public class GameModel extends Thread {
 
    public long getPCTime() {
         if (pcTime == 0) {
-            long logPre = System.currentTimeMillis();
+            long logPre = System.nanoTime();
             long time = 0;
             try {
                 time = TimePolling.INSTANCE.pollingTime();
@@ -278,11 +298,11 @@ public class GameModel extends Thread {
                 throwable.printStackTrace();
             }
 
-            long logPost = System.currentTimeMillis();
+            long logPost = System.nanoTime();
             pcTime = time - (logPost - logPre) / 2;
             localTime = logPost;
         } else {
-            long newLocalTime = System.currentTimeMillis();
+            long newLocalTime = System.nanoTime();
             pcTime += newLocalTime - localTime;
             localTime = newLocalTime;
         }
@@ -333,13 +353,16 @@ public class GameModel extends Thread {
             }
         }
         Log.d(TAG, "Game looper quit completely");
-        logDeviation.close();
-        logUserLatency.close();
-        logRoundLatency.close();
-        logTaggedValue.close();
-        MediaScannerConnection.scanFile(activity.getApplication(), new String[]{logDeviation.getFile().toString(),
-                        logUserLatency.getFile().toString(), logRoundLatency.getFile().toString(),
-                        logTaggedValue.getFile().toString()}, null,
+//        logDeviation.close();
+//        logUserLatency.close();
+//        logRoundLatency.close();
+//        logTaggedValue.close();
+        logOp.close();
+        MediaScannerConnection.scanFile(activity.getApplication(), new String[]{
+//                logDeviation.getFile().toString(),
+//                logUserLatency.getFile().toString(), logRoundLatency.getFile().toString(),
+//                logTaggedValue.getFile().toString(),
+                logOp.getFile().toString()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
                         Log.i("ExternalStorage", "Scanned " + path + ":");

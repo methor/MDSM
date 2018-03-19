@@ -20,9 +20,9 @@ public enum CausalConsistencyClient implements IRegisterClient<Serializable, Key
 
     public Serializable put(Key key, Serializable val) {
         VectorTimestamp vectorTimestamp = null;
-        synchronized (KVStoreInMemory.INSTANCE.getVectorTimestamp()) {
-            vectorTimestamp = KVStoreInMemory.INSTANCE.getVectorTimestamp().selfIncreament();
-        }
+
+        vectorTimestamp = KVStoreInMemory.INSTANCE.getVectorTimestamp().increament(GroupConfig.INSTANCE.getSelfIndex());
+
         KVStoreInMemory.INSTANCE.put(key, val);
         String ip = SessionManagerWrapper.NODEIP;
         CausalConsistencyMessage msg = new CausalConsistencyMessage(ip, cnt,

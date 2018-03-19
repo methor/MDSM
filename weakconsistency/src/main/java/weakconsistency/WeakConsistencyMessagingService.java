@@ -13,6 +13,7 @@ public enum WeakConsistencyMessagingService implements IReceiver {
     public void onReceive(IPMessage msg)
     {
         WeakConsistencyMessage weakConsistencyMessage = ((WeakConsistencyMessage) msg);
+
         WeakConsistencyServer.INSTANCE.handleWeakConsistencyMessage(weakConsistencyMessage);
     }
 

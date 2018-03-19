@@ -67,8 +67,10 @@ public enum CausalConsistencyServer implements IRegisterServer {
 
                         int index = msg.getOriginator();
                         if (incomingVectorTimestamp.getVectorTimestamp().get(index) !=
-                                selfVectorTimestamp.getVectorTimestamp().get(index) + 1)
+                                selfVectorTimestamp.getVectorTimestamp().get(index) + 1) {
+//                            System.out.println("Not Applied: msg=" + incomingVectorTimestamp + ", self=" + selfVectorTimestamp);
                             continue;
+                        }
 
                         int i;
                         for (i = 0; i < selfVectorTimestamp.getVectorTimestamp().size(); i++) {
@@ -79,9 +81,13 @@ public enum CausalConsistencyServer implements IRegisterServer {
                             }
                         }
                         if (i == selfVectorTimestamp.getVectorTimestamp().size()) {
+//                            System.out.println("Applied: msg=" + incomingVectorTimestamp + ", self=" + selfVectorTimestamp);
                             inQueue.pop();
                             KVStoreInMemory.INSTANCE.put(msg.getKey(), msg.getPayload());
                             KVStoreInMemory.INSTANCE.getVectorTimestamp().increament(index);
+                        }
+                        else {
+//                            System.out.println("Not Applied: msg=" + incomingVectorTimestamp + ", self=" + selfVectorTimestamp);
                         }
 
                     } catch (NoSuchElementException e) {
@@ -107,8 +113,9 @@ public enum CausalConsistencyServer implements IRegisterServer {
 
     public void onDestroy() {
         executorService.shutdown();
+        executorService.shutdownNow();
         try {
-            if (!executorService.awaitTermination(50, TimeUnit.MILLISECONDS))
+            while (!executorService.awaitTermination(50, TimeUnit.MILLISECONDS))
                 executorService.shutdownNow();
         } catch (InterruptedException e) {
             e.printStackTrace();

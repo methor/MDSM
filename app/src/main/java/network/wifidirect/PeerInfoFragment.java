@@ -68,7 +68,7 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         mContentView = inflater.inflate(R.layout.device_detail, null);
-        consistency = getResources().getString(R.string.atomic_consistency);
+        consistency = getResources().getString(R.string.causal_consistency);
         mContentView.findViewById(R.id.btn_connect).setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -225,11 +225,11 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
                                             printWriter.println(((ConnectActivity) getActivity()).feedbackEnabled);
                                             String deviceAddress = socket.getInetAddress().getHostAddress();
 
-                                            if (!new SessionManagerWrapper().isSessionAlive(ownerAddress.getHostAddress(), deviceAddress, 100, 101)) {
-                                                GroupConfig.INSTANCE.clearReplicas();
-                                                GroupConfig.INSTANCE.addSelf(new SystemNode(100, "server", ownerAddress.getHostAddress()));
-                                                GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
-                                            }
+
+                                            GroupConfig.INSTANCE.clearReplicas();
+                                            GroupConfig.INSTANCE.addSelf(new SystemNode(100, "server", ownerAddress.getHostAddress()));
+                                            GroupConfig.INSTANCE.addReplica(new SystemNode(101, "client", deviceAddress));
+
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         } finally {

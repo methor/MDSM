@@ -1,11 +1,10 @@
 package weakconsistency;
 
+import java.io.Serializable;
+
 import consistencyinfrastructure.architecture.IRegisterServer;
 import consistencyinfrastructure.data.kvs.Key;
 import log.NetworkLog;
-import sun.nio.ch.Net;
-
-import java.io.Serializable;
 
 /**
  * Created by Mio on 2016/3/7.
@@ -29,10 +28,11 @@ public enum WeakConsistencyServer implements IRegisterServer {
 
         Key key = msg.key;
         Serializable val = msg.val;
+
         KVStoreInMemory.INSTANCE.put(key, val);
 
-        if (networkLog != null)
-            networkLog.logNetworkLatency(msg);
+//        if (networkLog != null)
+//            networkLog.logNetworkLatency(msg);
 
     }
 

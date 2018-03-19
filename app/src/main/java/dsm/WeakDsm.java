@@ -61,7 +61,7 @@ public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> implem
     public void registerGameModel(GameModel gameModel)
     {
         this.gameModel = gameModel;
-        logNetworkDelay = gameModel.createLog("NetworkDelay");
+//        logNetworkDelay = gameModel.createLog("NetworkDelay");
     }
 
     public synchronized static WeakDsm INSTANCE()
@@ -96,8 +96,8 @@ public class WeakDsm extends AbstractDsm<Serializable, Key, Serializable> implem
         instance = null;
 
 
-        logNetworkDelay.close();
-        gameModel.scanFileOnExit(logNetworkDelay);
+//        logNetworkDelay.close();
+//        gameModel.scanFileOnExit(logNetworkDelay);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package verification;
 
 import java.io.Serializable;
+import java.util.Random;
 
 
 /**
@@ -13,8 +14,9 @@ public class TaggedValue implements Serializable{
     String device;
     String variable;
     int sID;
-    long time;
-    Serializable value;
+    public long time;
+    public Serializable value;
+    public long rnd;
 
     public TaggedValue(String device, String variable, int sID, long time, Serializable value) {
         this.device = device;
@@ -22,6 +24,12 @@ public class TaggedValue implements Serializable{
         this.sID = sID;
         this.time = time;
         this.value = value;
+    }
+
+    public TaggedValue setRnd(long rnd) {
+        this.rnd = rnd;
+        return this;
+
     }
 
     @Override

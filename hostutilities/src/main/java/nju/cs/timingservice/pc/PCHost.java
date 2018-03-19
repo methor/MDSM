@@ -8,25 +8,21 @@
 package nju.cs.timingservice.pc;
 
 
-import nju.cs.ADBExecutor;
-import nju.cs.SocketUtil;
-import nju.cs.extractdata.ExtractGameState;
-import nju.cs.timingservice.message.*;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import nju.cs.ADBExecutor;
+import nju.cs.SocketUtil;
+import nju.cs.timingservice.message.AuthMsg;
+import nju.cs.timingservice.message.Message;
+import nju.cs.timingservice.message.RequestTimeMsg;
+import nju.cs.timingservice.message.ResponseTimeMsg;
 
 public class PCHost {
     private ExecutorService exec;
@@ -104,7 +100,7 @@ public class PCHost {
      * @param host_socket send message via this specified socket
      */
     private void sendResponseTimeMsg(final Socket host_socket) throws IOException {
-        SocketUtil.INSTANCE.sendMsg(new ResponseTimeMsg(System.currentTimeMillis()), host_socket);
+        SocketUtil.INSTANCE.sendMsg(new ResponseTimeMsg(System.nanoTime()), host_socket);
     }
 
     /**
@@ -215,15 +211,17 @@ public class PCHost {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        ADBExecutor adb_executor = new ADBExecutor("adb");
-        Map<String, Integer> device_hostport_map = adb_executor.execAdbOnlineDevicesPortForward();
-        final PCHost host = new PCHost(device_hostport_map);
+        ADBExecutor adb_executor = new ADBExecutor("D:\\Android\\sdk\\platform-tools\\adb.exe");
+        while (true) {
+            Map<String, Integer> device_hostport_map = adb_executor.execAdbOnlineDevicesPortForward();
+            final PCHost host = new PCHost(device_hostport_map);
 
-        host.startTimePollingService();
+            host.startTimePollingService();
 
-        Thread.sleep(1000);
+            Thread.sleep(1000);
 
-        host.shutDown();
+            host.shutDown();
+        }
 
 /*
         adb_executor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",

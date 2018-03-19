@@ -37,16 +37,17 @@ public class VectorTimestamp implements Serializable {
     }
 
 
-    public VectorTimestamp selfIncreament()
+    public synchronized VectorTimestamp selfIncreament()
     {
         int index = GroupConfig.INSTANCE.getSelfIndex();
         vectorTimestamp.set(index, vectorTimestamp.get(index) + 1);
         return this;
     }
 
-    public void increament(int index)
+    public synchronized VectorTimestamp increament(int index)
     {
         vectorTimestamp.set(index, vectorTimestamp.get(index) + 1);
+        return this;
     }
 
     public void setVectorTimestamp(ArrayList<Integer> vectorTimestamp) {

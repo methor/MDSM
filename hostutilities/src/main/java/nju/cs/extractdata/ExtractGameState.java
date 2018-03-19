@@ -1,28 +1,20 @@
 package nju.cs.extractdata;
 
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Array;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.DoubleSummaryStatistics;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.math3.analysis.interpolation.*;
-import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-import org.jfree.chart.*;
 
 import nju.cs.ADBExecutor;
 
@@ -34,7 +26,7 @@ public class ExtractGameState {
     public static void main(String[] args)
     {
 
-        ADBExecutor adbExecutor = new ADBExecutor("adb");
+        ADBExecutor adbExecutor = new ADBExecutor("D:\\Android\\sdk\\platform-tools\\adb.exe");
         adbExecutor.copyFromAll("/storage/emulated/0/Android/data/com.njucs.ballgame/files/BallGameDir",
                 "log");
 

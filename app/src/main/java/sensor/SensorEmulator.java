@@ -1,11 +1,15 @@
 package sensor;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 
+import consistencyinfrastructure.login.SessionManagerWrapper;
 import constant.Constant;
 import model.GameModel;
+import network.wifidirect.ConnectActivity;
 
 import java.util.Random;
 
@@ -17,6 +21,7 @@ public class SensorEmulator extends Thread {
     private GameModel model;
 
     public static final String TAG = AccelarateSensor.class.getName();
+
 
     public long actNumber = 0;
 
@@ -44,6 +49,7 @@ public class SensorEmulator extends Thread {
     @Override
     public void run()
     {
+        Float a1 = 0f, a2 = -0.5f;
         while (true)
         {
             try
@@ -56,16 +62,25 @@ public class SensorEmulator extends Thread {
             }
 
             // restrict sensor event number
-            if (actNumber == 11000)
+            if (actNumber == 2500) {
+                Intent intent = new Intent(model.activity, ConnectActivity.class);
+                intent.putExtra("wait10s", true);
+                model.activity.setResult(Activity.RESULT_OK, intent);
+                model.activity.finish();
                 continue;
+            }
 
             Random random = new Random();
-            float a1 = random.nextFloat();
-            if (random.nextFloat() > 0.5)
-                a1 = -a1;
-            float a2 = random.nextFloat();
-            if (random.nextFloat() > 0.5)
-                a2 = -a2;
+            if (!(actNumber < 100 && SessionManagerWrapper.isLeader())) {
+                if (random.nextFloat() > 0.8) {
+                    a1 = random.nextFloat();
+                    if (random.nextFloat() > 0.5)
+                        a1 = -a1;
+                    a2 = random.nextFloat();
+                    if (random.nextFloat() > 0.5)
+                        a2 = -a2;
+                }
+            }
             Message message = Message.obtain(model.handler);
             message.what = 1;
             Bundle bundle = new Bundle();

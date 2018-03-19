@@ -28,7 +28,7 @@ public enum KVStoreInMemory implements IKVStore<Serializable, Key>
 
 	// Using the thread-safe ConcurrentHashMap to cope with the multi-thread concurrency.
 	private final ConcurrentMap<Key, Serializable> key_val_map = new ConcurrentHashMap<>();
-	private final VectorTimestamp vectorTimestamp = new VectorTimestamp();
+	private VectorTimestamp vectorTimestamp = new VectorTimestamp();
 	
 	/**
 	 * @author hengxin
@@ -42,7 +42,7 @@ public enum KVStoreInMemory implements IKVStore<Serializable, Key>
 	 */
 
 
-	public VectorTimestamp getVectorTimestamp() {
+	public synchronized VectorTimestamp getVectorTimestamp() {
 		return vectorTimestamp;
 	}
 
@@ -99,6 +99,7 @@ public enum KVStoreInMemory implements IKVStore<Serializable, Key>
 	public void clean()
 	{
 		key_val_map.clear();
+		vectorTimestamp = new VectorTimestamp();
 	}
 }
 
