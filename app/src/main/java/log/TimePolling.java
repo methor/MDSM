@@ -4,6 +4,8 @@ import nju.cs.ADBExecutor;
 import nju.cs.timingservice.TimingService;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,23 +19,11 @@ public enum TimePolling {
 
     private ServerSocket serverSocket = null;
 
+
     public static final String TAG = TimePolling.class.getName();
 
     public void establishDeviceHostConnection()
     {
-
-
-
-        Socket host_socket = TimingService.INSTANCE.getHostSocket();
-        if (host_socket != null && (host_socket.isConnected() && !host_socket.isClosed()))
-            try
-            {
-                host_socket.close();
-            } catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-
         Runnable runnable = new Runnable() {
             @Override
             public void run()
@@ -50,10 +40,10 @@ public enum TimePolling {
                         {
                             e.printStackTrace();
                         }
-
                     }
-                    TimingService.INSTANCE.setHostSocket(serverSocket.accept());
-
+                    Socket host_socket = TimingService.INSTANCE.getHostSocket();
+                    if (host_socket == null || host_socket.isClosed() || !host_socket.isConnected())
+                        TimingService.INSTANCE.setHostSocket(serverSocket.accept());
                 } catch (IOException e)
                 {
                     e.printStackTrace();

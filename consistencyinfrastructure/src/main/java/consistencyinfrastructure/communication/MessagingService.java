@@ -42,6 +42,7 @@ public enum MessagingService implements IReceiver {
 
     private static ExecutorService exec = Executors.newCachedThreadPool();
     private static ScheduledExecutorService sendExec = Executors.newScheduledThreadPool(8);
+    private static ExecutorService singleExec = Executors.newSingleThreadExecutor();
 
 
     /**
@@ -113,7 +114,7 @@ public enum MessagingService implements IReceiver {
                     e.printStackTrace();
                 }
             }
-            runnable.run();
+            singleExec.submit(runnable);
         } else {
             try {
                 sendExec.schedule(runnable, random.nextInt(injectedLatencyUpperBound + 1), TimeUnit.MILLISECONDS);
@@ -236,8 +237,18 @@ public enum MessagingService implements IReceiver {
             }
         }
         clientMap.clear();
+        singleExec.shutdown();
         exec.shutdown();
         sendExec.shutdown();
+
+        try {
+            while (!singleExec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         try {
             while (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
                 exec.shutdownNow();
@@ -258,8 +269,10 @@ public enum MessagingService implements IReceiver {
 
 
     private void startThreadPool() {
-        if (exec.isShutdown())
+        if (exec == null || exec.isShutdown() || exec.isTerminated())
             exec = Executors.newCachedThreadPool();
+        if (singleExec == null || singleExec.isShutdown() || singleExec.isTerminated())
+            singleExec = Executors.newSingleThreadExecutor();
         if (sendExec.isShutdown())
             sendExec = Executors.newScheduledThreadPool(8);
 

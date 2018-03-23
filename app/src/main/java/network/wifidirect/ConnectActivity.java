@@ -57,7 +57,7 @@ public class ConnectActivity extends AppCompatActivity implements PeerListFragme
 
     private boolean isWifiP2pEnabled;
 
-    static final int RUNNING_TIMES = 60;
+    static final int RUNNING_TIMES = 10;
     int runningRemaining = RUNNING_TIMES;
 
 

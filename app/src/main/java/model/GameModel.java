@@ -11,7 +11,10 @@ import android.util.Log;
 
 import com.njucs.main.MainActivity;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -69,7 +72,7 @@ public class GameModel extends Thread {
     public long handledNumber = 0;
 
 
-    private long pcTime;
+    private Long pcTime = null;
     private long localTime;
     private long lastProcessTime = 0;
 
@@ -145,10 +148,15 @@ public class GameModel extends Thread {
         {
             if (compileCount == 0) {
                 try {
-                    TimingService.INSTANCE.receiveAuthMsg();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                            TimingService.INSTANCE.getHostSocket().getInputStream()));
+                    PrintWriter writer = new PrintWriter(TimingService.INSTANCE.getHostSocket().getOutputStream(), true);
+                    writer.println("connected?");
+                    while (reader.readLine() == null);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
                 compileCount++;
             }
         }
@@ -289,11 +297,12 @@ public class GameModel extends Thread {
     }
 
    public long getPCTime() {
-        if (pcTime == 0) {
+        if (pcTime == null) {
             long logPre = System.nanoTime();
             long time = 0;
             try {
                 time = TimePolling.INSTANCE.pollingTime();
+
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
@@ -301,11 +310,18 @@ public class GameModel extends Thread {
             long logPost = System.nanoTime();
             pcTime = time - (logPost - logPre) / 2;
             localTime = logPost;
+            Log.d("PC TIME", Long.toString(pcTime));
+
+            if (pcTime <= 0) {
+                throw new RuntimeException("time:" + time + ", logPost: " + logPost + ", logpre: " + logPre);
+            }
         } else {
             long newLocalTime = System.nanoTime();
             pcTime += newLocalTime - localTime;
             localTime = newLocalTime;
         }
+//       if (pcTime <= 0)
+//           throw new RuntimeException();
 
         return pcTime;
     }
@@ -367,7 +383,7 @@ public class GameModel extends Thread {
                     public void onScanCompleted(String path, Uri uri) {
                         Log.i("ExternalStorage", "Scanned " + path + ":");
                         Log.i("ExternalStorage", "-> uri=" + uri);
-                        TimePolling.INSTANCE.closeDeviceHostConnection();
+//                        TimePolling.INSTANCE.closeDeviceHostConnection();
                     }
                 });
     }
@@ -379,7 +395,7 @@ public class GameModel extends Thread {
                     public void onScanCompleted(String path, Uri uri) {
                         Log.i("ExternalStorage", "Scanned " + path + ":");
                         Log.i("ExternalStorage", "-> uri=" + uri);
-                        TimePolling.INSTANCE.closeDeviceHostConnection();
+//                        TimePolling.INSTANCE.closeDeviceHostConnection();
                     }
                 });
     }

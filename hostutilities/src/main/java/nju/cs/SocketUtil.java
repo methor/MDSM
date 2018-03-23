@@ -1,5 +1,6 @@
 package nju.cs;
 
+import nju.cs.timingservice.TimingService;
 import nju.cs.timingservice.message.Message;
 
 import java.io.*;
@@ -25,14 +26,14 @@ public enum SocketUtil {
         if (host_socket == null)
             return;
 
-        OutputStream outputStream = host_socket.getOutputStream();
-        oos = new ObjectOutputStream(outputStream);
+
+        oos = TimingService.INSTANCE.outputStream;
         oos.writeObject(msg);
         oos.flush();
     }
 
-    public void sendMsgInNewThread(final Message msg, final Socket host_socket) {
-        exec.execute(new SendMsgTask(msg, host_socket));
+    public void sendMsgInNewThread(final Message msg, final Socket host_socket, ObjectOutputStream outputStream) {
+        exec.execute(new SendMsgTask(msg, host_socket, outputStream));
     }
 
     public Message receiveMsg(final Socket host_socket) throws IOException {
@@ -42,8 +43,7 @@ public enum SocketUtil {
             return null;
 
         try {
-            InputStream is = host_socket.getInputStream();
-            final ObjectInputStream ois = new ObjectInputStream(is);
+            final ObjectInputStream ois = TimingService.INSTANCE.inputStream;
             Object o = ois.readObject();
             msg = (Message) o;
         } catch (StreamCorruptedException sce) {
@@ -55,8 +55,8 @@ public enum SocketUtil {
         return msg;
     }
 
-    public Message receiveMsgInNewThread(final Socket host_socket) throws Throwable {
-        Future<Message> future = exec.submit(new ReceiveMsgTask(host_socket));
+    public Message receiveMsgInNewThread(final Socket host_socket, ObjectInputStream inputStream) throws Throwable {
+        Future<Message> future = exec.submit(new ReceiveMsgTask(host_socket, inputStream));
         try {
             return future.get();
         } catch (InterruptedException ie) {
@@ -81,6 +81,7 @@ public enum SocketUtil {
         private final Message msg;
         // send message via this socket
         private final Socket host_socket;
+        private ObjectOutputStream outputStream;
 
         /**
          * Constructor of {@link SendMsgTask}
@@ -88,9 +89,10 @@ public enum SocketUtil {
          * @param msg         {@link Message} to send
          * @param host_socket send message via this socket
          */
-        public SendMsgTask(final Message msg, final Socket host_socket) {
+        public SendMsgTask(final Message msg, final Socket host_socket, ObjectOutputStream outputStream) {
             this.msg = msg;
             this.host_socket = host_socket;
+            this.outputStream = outputStream;
         }
 
         @Override
@@ -101,9 +103,9 @@ public enum SocketUtil {
                 return;
 
             try {
-                oos = new ObjectOutputStream(host_socket.getOutputStream());
-                oos.writeObject(msg);
-                oos.flush();
+
+                outputStream.writeObject(msg);
+                outputStream.flush();
             } catch (SocketTimeoutException stoe) {
                 stoe.printStackTrace();
             } catch (IOException ioe) {
@@ -114,9 +116,11 @@ public enum SocketUtil {
 
     final class ReceiveMsgTask implements Callable<Message> {
         private final Socket host_socket;
+        private ObjectInputStream inputStream = null;
 
-        public ReceiveMsgTask(final Socket host_socket) {
+        public ReceiveMsgTask(final Socket host_socket, ObjectInputStream inputStream) {
             this.host_socket = host_socket;
+            this.inputStream = inputStream;
         }
 
         @Override
@@ -126,8 +130,7 @@ public enum SocketUtil {
                 return null;
 
             try {
-                final ObjectInputStream ois = new ObjectInputStream(host_socket.getInputStream());
-                msg = (Message) ois.readObject();
+                msg = (Message) inputStream.readObject();
             } catch (StreamCorruptedException sce) {
                 sce.printStackTrace();
             } catch (ClassNotFoundException cnfe) {

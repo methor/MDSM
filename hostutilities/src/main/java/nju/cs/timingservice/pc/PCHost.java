@@ -8,7 +8,11 @@
 package nju.cs.timingservice.pc;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -109,8 +113,8 @@ public class PCHost {
      *
      * @param host_socket the message is sent via this socket
      */
-    private void sendResponseTimeMsgInNewThread(final Socket host_socket) {
-        SocketUtil.INSTANCE.sendMsgInNewThread(new ResponseTimeMsg(System.currentTimeMillis()), host_socket);
+    private void sendResponseTimeMsgInNewThread(final Socket host_socket, ObjectOutputStream outputStream) {
+        SocketUtil.INSTANCE.sendMsgInNewThread(new ResponseTimeMsg(System.currentTimeMillis()), host_socket, outputStream);
     }
 
     /**
@@ -127,14 +131,6 @@ public class PCHost {
             if (host_socket == null)
                 throw new AssertionError("socket cannot be null");
 
-            while (true) {
-                try {
-                    this.sendAuthMsg(host_socket);
-                    break;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
             /**
              * Alternate: wait for {@link RequestTimeMsg} from Android devices
              * and send {@link ResponseTimeMsg} with system time to them
@@ -142,13 +138,6 @@ public class PCHost {
             exec.execute(new Alternate(host_socket));
         }
         exec.shutdown();    // shutdown this thread pool
-        try {
-            while (!exec.awaitTermination(1, TimeUnit.SECONDS)) {
-                System.out.println("Exec not terminated");
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -179,10 +168,24 @@ public class PCHost {
                 // wait for {@link RequestTimeMsg} from Android device
 
                     try {
-                        msg = waitForRequestTimeMsg(host_socket);
-                        System.out.println("Receiving RequestTimeMsg: " + msg.toString());
+//                        msg = waitForRequestTimeMsg(host_socket);
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(host_socket.getInputStream()));
+                        String request = bufferedReader.readLine();
+                        if (request == null) {
+                            host_socket.close();
+                            break;
+                        }
+                        System.out.println("Receiving RequestTimeMsg: " + request);
+                        PrintWriter writer = new PrintWriter(host_socket.getOutputStream(), true);
+                        if (request.equals("connected?"))
+                            writer.println("connected");
                         // send {@link ResponseTimeMsg} with current system time to Android device
-                        sendResponseTimeMsg(host_socket);
+//                        sendResponseTimeMsg(host_socket);
+                        else if (request.equals("current time")) {
+                            String time = String.valueOf(System.nanoTime());
+                            System.out.println(time);
+                            writer.println(time);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                         try {
@@ -218,9 +221,12 @@ public class PCHost {
 
             host.startTimePollingService();
 
-            Thread.sleep(1000);
-
-            host.shutDown();
+            for (Map.Entry<String, Socket> device_hostsocket : host.device_hostsocket_map.entrySet()) {
+                while (!device_hostsocket.getValue().isClosed()) {
+                    Thread.sleep(10);
+                }
+            }
+            System.out.println("start overrrrrrrrrrrrrr");
         }
 
 /*

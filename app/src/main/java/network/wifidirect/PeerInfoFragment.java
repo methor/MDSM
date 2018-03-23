@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.njucs.main.MainActivity;
@@ -159,6 +160,7 @@ public class PeerInfoFragment extends Fragment implements WifiP2pManager.Connect
                 ((TextView) getActivity().findViewById(R.id.group_consistency)).setText(getResources().getString(R.string.consistency) +
                         ": " + consistency);
                 getActivity().findViewById(R.id.feedback_group).setVisibility(View.VISIBLE);
+                ((RadioGroup)(getActivity().findViewById(R.id.feedback_group))).check(R.id.nofeedback);
             }
 
             // hide the connect button

@@ -33,7 +33,7 @@ public class SensorEmulator extends Thread {
         this.sampleIntervalMicro = sampleIntervalMicro;
     }
 
-    public int sampleIntervalMicro = 20000;
+    public int sampleIntervalMicro = 33333;
     public SensorEmulator(GameModel model)
     {
         this.model = model;
@@ -62,7 +62,7 @@ public class SensorEmulator extends Thread {
             }
 
             // restrict sensor event number
-            if (actNumber == 2500) {
+            if (actNumber == 1500) {
                 Intent intent = new Intent(model.activity, ConnectActivity.class);
                 intent.putExtra("wait10s", true);
                 model.activity.setResult(Activity.RESULT_OK, intent);
